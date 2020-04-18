@@ -18,3 +18,7 @@ Sh*t-coded bash script for AUR. Just to do something by myself.
 	sakuri ug (name of aur package) for removing package from ignore list.\
 	sakuri gl for watch on ignored packages.\
 	sakuri u for updating all AUR packages.**
+
+## AUR git clone link:
+
+https://aur.archlinux.org/sakuri.git

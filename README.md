@@ -17,4 +17,4 @@ Sh*t-coded bash script for AUR. Just to do something by myself.
 	sakuri g (name of aur package) for ignore package for checking updates.\
 	sakuri ug (name of aur package) for removing package from ignore list.\
 	sakuri gl for watch on ignored packages.\
-	sakuri u for updating all AUR packages.**\
+	sakuri u for updating all AUR packages.**

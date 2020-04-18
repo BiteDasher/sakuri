@@ -1,0 +1,961 @@
+#!/bin/bash
+#if [ "$(echo $UID)" == 0 ]
+#then
+#	echo "It seems like you using this script as root. It may be dangerous."
+#	sleep 1
+#else
+#	true
+#fi
+DIR=~/sakuridir
+REG=~/sakuridir/reg
+DIRR=~/sakuridir/gitpool
+UPDCHK=~/sakuridir/updchk
+UPDALL=~/sakuridir/updall
+IGN=~/sakuridir/ignore
+if [ -d "${DIR}" ]
+then
+true
+else
+mkdir ~/sakuridir
+fi
+if [ -d "${REG}" ]
+then
+true
+else
+mkdir -p ~/sakuridir/reg && chmod a+rw ~/sakuridir/reg
+fi
+if [ -d "${DIRR}" ]
+then
+true
+else
+mkdir -p ~/sakuridir/gitpool
+fi
+if [ -d "$UPDCHK" ]
+then
+true
+else
+mkdir -p ~/sakuridir/updchk
+fi
+if [ -d "$UPDALL" ]
+then
+true
+else
+mkdir -p ~/sakuridir/updall
+fi
+if [ -d "$IGN" ]
+then
+true
+else
+mkdir -p ~/sakuridir/ignore
+fi
+PKG=$2
+GITDIR=.git
+installerror="\033[0;31mIt seems like after makepkg command something went wrong. Please check logs of pacman and try again.\033[0m"
+rm -rf ${DIRR}/.git
+if [ -d "${DIR}/rel" ]
+then
+rm -rf ${DIR}/rel &> /dev/null
+else
+true
+fi
+if [ -f "${DIR}/info2" ]
+then
+rm ${DIR}/info2
+else
+true
+fi
+if [ -z "$3" ]
+then
+	true
+else
+	exit
+fi
+case "$1" in
+        i)
+                if [ -z "$2" ]
+                then
+                        echo "Write what you need to install"
+                        exit
+                else
+                        true
+                fi
+                cd ${DIR}
+                if [ -d "${PKG}" ]
+                then
+                        echo "You already have a cache of this package. Remove it? [y/n]"
+                        read q
+                if [ $q == y ] &> /dev/null
+                then
+                        rm -rf ${PKG}
+                else
+                        echo "Try next time"
+                        exit
+                fi
+	fi
+		if [ -d "${IGN}/${PKG}" ]
+		then
+			echo "You are ignored this package. Remove folder from ignore list? [y/n]"
+			read q3
+		if [ $q3 == y ] &> /dev/null
+		then
+			mv ${IGN}/${PKG} ${REG}/${PKG}
+		else
+			echo "Try next time"
+			exit
+		fi
+	fi
+		if [ -d "${REG}/${PKG}" ]
+		then
+			mv ${REG}/${PKG} ${REG}/\.${PKG}
+		else
+			true
+		fi
+		git clone https://aur.archlinux.org/${PKG}.git
+		if [ -d "${DIR}/${PKG}" ]
+		then
+			true
+		else
+			if [ -d ${REG}/\.${PKG} ]
+			then
+			mv ${REG}/\.${PKG} ${REG}/${PKG}
+		else
+			true
+			fi
+			echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
+			exit
+		fi
+                mv ${PKG}/${GITDIR} ${DIRR}
+                if [ -z "$(ls -A ${PKG})" ]
+                then
+                        echo "Empty dir, removing."
+                        rm -rf ${PKG}
+                        rm -rf ${DIRR}/${GITDIR}
+                else
+                        mv ${DIRR}/${GITDIR} ${PKG}
+                        cd ${PKG}
+			source PKGBUILD
+                        pacman -Ssq | sort > .00PRESYNC
+			pacman -Qsq | sort >> .00PRESYNC
+			sort -u .00PRESYNC > .00SYNC
+			rm .00PRESYNC
+			if [[ -z "${depends[@]}" ]]; then true; else
+                        echo ${depends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 > .00AUR
+			fi
+			if [[ -z "${makedepends[@]}" ]]; then true; else
+                        echo ${makedepends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 >> .00AUR
+			fi
+			if [ -f \.00AUR ]; then true; else touch \.00AUR; fi
+                        sort -u .00AUR > .00AUR2
+                        rm .00AUR
+                        mv .00AUR2 .00AUR
+                        diff .00SYNC .00AUR | grep -e ">" | cut -d" " -f2 > .00RESULT
+                        if [ -z "$(cat .00RESULT)" ]; then true; else
+			echo "----------------"
+			cat .00RESULT
+                        echo -e "\033[0;31mIt seems that package you tries to install has AUR dependencies. Install them? [y/n]\033[0m"
+			read alphaq
+			if [ $alphaq == y ] &> /dev/null
+			then
+				true
+			else
+			if [ -d ${REG}/\.${PKG} ]
+			then
+			mv ${REG}/\.${PKG} ${REG}/${PKG}
+			else
+			true
+			fi
+				rm ${DIR}/*/.00*
+				exit
+			fi
+                        echo "----------------"
+                        for aurd in `cat .00RESULT`
+                        do
+                                sakuri i $aurd
+                        done
+			fi
+                        makepkg -sir ||
+			if [ -d ${REG}/\.${PKG} ]
+			then
+			mv ${REG}/\.${PKG} ${REG}/${PKG}
+			echo -e $installerror
+			rm ${DIR}/*/.00*
+			exit
+		else
+			echo -e $installerror
+			rm ${DIR}/*/.00*
+			exit
+			fi;
+			if [ -d ${REG}/\.${PKG} ]
+			then
+			rm -rf ${REG}/\.${PKG}
+		else
+			true
+			fi
+                        mkdir ${REG}/${PKG}
+                        touch ${REG}/${PKG}/$(cat PKGBUILD | grep -m1 pkgver | cut -c8-100 | tr -d "'\"")
+                        mkdir ${REG}/${PKG}/rel
+                        touch ${REG}/${PKG}/rel/$(cat PKGBUILD | grep -m1 pkgrel | cut -c8-100 | tr -d "'\"")
+                fi
+                ;;
+	ia)
+		
+		if [ -z $2 ]
+		then
+			echo "Write what you need to install again"
+			exit
+		else
+			true
+		fi
+		if [ -d "${DIR}/${PKG}" ]
+		then
+			true
+		else
+			echo "Package directory doesn't exists."
+			exit
+		fi
+		if [ -d "${IGN}/${PKG}" ]
+		then
+			echo "You are ignored this package. Remove folder from ignore list? [y/n]"
+			read q33
+		if [ $q33 == y ] &> /dev/null
+		then
+			mv ${IGN}/${PKG} ${REG}/${PKG}
+		else
+			echo "Try next time"
+			exit
+		fi
+	fi
+		cd ${DIR}/${PKG}
+		if [ -d "${REG}/${PKG}" ]
+		then
+		mv ${REG}/${PKG} ${REG}/\.${PKG}
+	else
+		true
+		fi
+			
+			source PKGBUILD
+                        pacman -Ssq | sort > .00SYNC
+			pacman -Qsq | sort >> .00PRESYNC
+			sort -u .00PRESYNC > .00SYNC
+			rm .00PRESYNC
+			if [[ -z "${depends[@]}" ]]; then true; else
+                        echo ${depends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 > .00AUR
+			fi
+			if [[ -z "${makedepends[@]}" ]]; then true; else
+                        echo ${makedepends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 >> .00AUR
+			fi
+			if [ -f \.00AUR ]; then true; else touch \.00AUR; fi
+                        sort -u .00AUR > .00AUR2
+                        rm .00AUR
+                        mv .00AUR2 .00AUR
+                        diff .00SYNC .00AUR | grep -e ">" | cut -d" " -f2 > .00RESULT
+                        if [ -z "$(cat .00RESULT)" ]; then true; else
+			echo "----------------"
+			cat .00RESULT
+                        echo -e "\033[0;31mIt seems that package you tries to install has AUR dependencies. Install them? [y/n]\033[0m"
+			read alphaq
+			if [ $alphaq == y ] &> /dev/null
+			then
+				true
+			else
+			if [ -d ${REG}/\.${PKG} ]
+			then
+			mv ${REG}/\.${PKG} ${REG}/${PKG}
+			else
+			true
+			fi
+				rm ${DIR}/*/.00*
+				exit
+			fi
+                        echo "----------------"
+                        for aurd in `cat .00RESULT`
+                        do
+                                sakuri i $aurd
+                        done
+			fi
+			makepkg -sir ||
+			if [ -d ${REG}/\.${PKG} ]
+			then
+			mv ${REG}/\.${PKG} ${REG}/${PKG}
+			echo -e $installerror
+			rm ${DIR}/*/.00*
+			exit
+		else
+			echo -e $installerror
+			rm ${DIR}/*/.00*
+			exit
+			fi;	
+			if [ -d ${REG}/\.${PKG} ]
+				then
+				rm -rf ${REG}/\.${PKG}
+			else
+				true
+				fi
+			mkdir ${REG}/${PKG}
+			touch ${REG}/${PKG}/$(cat PKGBUILD | grep -m1 pkgver | cut -c8-100 | tr -d "'\"")
+			mkdir ${REG}/${PKG}/rel
+			touch ${REG}/${PKG}/rel/$(cat PKGBUILD | grep -m1 pkgrel | cut -c8-100 | tr -d "'\"")
+			;;	
+	--back-ia--)
+		if [ -z $2 ]
+		then
+			echo "Write what you need to install again"
+			exit
+		else
+			true
+		fi
+		if [ -d "${DIR}/${PKG}" ]
+		then
+			true
+		else
+			echo "Package directory doesn't exists."
+			exit
+		fi
+		if [ -d "${IGN}/${PKG}" ]
+		then
+			echo "You are ignored this package. Remove folder from ignore list? [y/n]"
+			read q33
+		if [ $q33 == y ] &> /dev/null
+		then
+			mv ${IGN}/${PKG} ${REG}/${PKG}
+		else
+			echo "Try next time"
+			exit
+		fi
+	fi
+		cd ${DIR}/${PKG}
+		if [ -d "${REG}/${PKG}" ]
+		then
+		mv ${REG}/${PKG} ${REG}/\.${PKG}
+	else
+		true
+		fi
+			makepkg -sir ||
+			if [ -d ${REG}/\.${PKG} ]
+			then
+			mv ${REG}/\.${PKG} ${REG}/${PKG}
+			export SAKURIE=1
+			echo -e $installerror
+		else
+			export SAKURIE=1
+			echo -e $installerror
+			fi;
+			if [ "$SAKURIE" == 1 ]; then
+			echo " "
+		else
+			if [ -d ${REG}/\.${PKG} ]
+				then
+				rm -rf ${REG}/\.${PKG}
+			else
+				true
+				fi
+			mkdir ${REG}/${PKG}
+			touch ${REG}/${PKG}/$(cat PKGBUILD | grep -m1 pkgver | cut -c8-100 | tr -d "'\"")
+			mkdir ${REG}/${PKG}/rel
+			touch ${REG}/${PKG}/rel/$(cat PKGBUILD | grep -m1 pkgrel | cut -c8-100 | tr -d "'\"")
+			fi
+			if [ "$SAKURIE" == 1 ]; then
+			unset SAKURIE
+		else
+			exit
+			fi
+			;;	
+        r)
+                if [ -z "$2" ]
+                then
+                        echo "Write what you need to remove"
+                        exit
+                else
+                true
+        fi
+		if [ -d "${IGN}/${PKG}" ]
+		then
+			echo "You are ignored this package. By deleting this package, you also will delete information about it in ignore list. Continue? [y/n]"
+			read q4
+			if [ $q4 == y ] &> /dev/null
+			then
+				rm -rf ${IGN}/${PKG}
+				sudo pacman -Rns ${PKG}
+			else
+				echo "Try next time"
+				exit
+			fi
+		fi
+        sudo pacman -Rns ${PKG}
+        rm -rf ${REG}/${PKG}
+                ;;
+--back-i--)
+                cd ${DIR}
+                if [ -d "${PKG}" ]
+                then
+                        rm -rf ${PKG}
+		else
+			true 
+                fi
+		if [ -d "${REG}/${PKG}" ]
+		then
+			mv ${REG}/${PKG} ${REG}/\.${PKG}
+		else
+			true
+		fi
+		git clone https://aur.archlinux.org/${PKG}.git
+		if [ -d "${DIR}/${PKG}" ]
+		then
+			true
+		else
+			if [ -d ${REG}/\.${PKG} ]
+			then
+			mv ${REG}/\.${PKG} ${REG}/${PKG}
+		else
+			true
+			fi
+			echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
+			exit
+		fi
+                mv ${PKG}/${GITDIR} ${DIRR}
+                if [ -z "$(ls -A ${PKG})" ]
+                then
+                        echo "Empty dir, removing."
+                        rm -rf ${PKG}
+                        rm -rf ${DIRR}/${GITDIR}
+                else
+                        mv ${DIRR}/${GITDIR} ${PKG}
+                        cd ${PKG}
+                        makepkg -sir --noconfirm ||
+			if [ -d ${REG}/\.${PKG} ]
+			then
+			mv ${REG}/\.${PKG} ${REG}/${PKG}
+			echo -e $installerror
+			export SAKURIE=1
+			echo error > ${DIR}/.uu7
+		else
+			echo -e $installerror
+			export SAKURIE=1
+			echo error > ${DIR}/.uu7
+			fi;
+			if [ "$SAKURIE" == 1 ]; then
+			unset SAKURIE
+			echo " "
+			else
+			if [ -d ${REG}/\.${PKG} ]
+			then
+			rm -rf ${REG}/\.${PKG}
+		else
+			true
+			fi
+                        mkdir ${REG}/${PKG}
+                        touch ${REG}/${PKG}/$(cat PKGBUILD | grep -m1 pkgver | cut -c8-100 | tr -d "'\"")
+                        mkdir ${REG}/${PKG}/rel
+                        touch ${REG}/${PKG}/rel/$(cat PKGBUILD | grep -m1 pkgrel | cut -c8-100 | tr -d "'\"")
+			unset SAKURIE
+                fi
+	fi
+                ;;
+        ch)
+                cd ${UPDCHK}
+                if [ -z "$2" ]
+                then
+                        echo "Write what you need to check"
+                        exit
+                else
+			true
+		fi
+		if [ -d "${IGN}/${PKG}" ]
+		then
+			echo "You have ignored this package. Check it? [y/n]"
+			read qqq
+			if [ $qqq == y ] &> /dev/null
+			then
+			echo "${PKG}" >> ${DIR}/info2
+			mv ${IGN}/${PKG} ${REG}/${PKG}
+			else
+			exit
+			fi
+		fi
+			if [ -d "${REG}/${PKG}" ]
+                                then
+                                        true
+                                else
+                                echo "---------------------------"
+                                echo "Package ${PKG} doesn't exists, or you doesn't have information about it in registry"
+                                exit
+                        fi
+                        rm -rf ./*
+                        if [ -f ~/tmptmptmpsakuri ]
+				then
+			rm ~/tmptmptmpsakuri
+				else
+			touch ~/tmptmptmpsakuri
+			fi
+                        git clone https://aur.archlinux.org/${PKG}.git > ~/tmptmptmpsakuri 2>&1
+			if cat ~/tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
+			then
+				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
+				rm ~/tmptmptmpsakuri
+				if [ -f ${DIR}/info2 ]
+				then
+				mv ${REG}/${PKG} ${IGN}/${PKG}
+				rm ${DIR}/info2
+				else
+				true
+				fi
+				exit
+			else
+			if cat ~/tmptmptmpsakuri | grep warning &> /dev/null
+			then
+				echo -e "\033[0;31mIt seems like repository of ${PKG} package not found. Try to check it on AUR, or remove it by hand for get rid of this message.\033[0m"
+				rm ~/tmptmptmpsakuri
+				if [ -f ${DIR}/info2 ]
+				then
+				mv ${REG}/${PKG} ${IGN}/${PKG}
+				rm ${DIR}/info2
+				else
+				true
+				fi
+				exit
+			fi
+			fi
+                        cd ${PKG}
+                        mkdir ../10trash10
+                        mv ./* ../10trash10
+                        mv ../10trash10/PKGBUILD ./PKGBUILD
+                        touch $(cat PKGBUILD | grep -m1 pkgver | cut -c8-100)
+                        mkdir rel
+                        cd rel
+                        touch $(cat ../PKGBUILD | grep -m1 pkgrel | cut -c8-100) 
+                        cd ..
+                        rm PKGBUILD
+                        rm -rf ../10trash10
+                        cd ..
+                        APP1=$(ls -I rel ${PKG} | tr -d "'\"")
+                        APP2=$(ls -I rel ${REG}/${PKG})
+                        if [ $APP1 == $APP2 ]
+                        then
+                                echo "---------------------------"
+                                echo "Package ${PKG} doesn't get new update."
+                                echo "---------------------------"
+                                echo "Current version: ${APP2}"
+                        else
+                                echo "---------------------------"
+                                echo "Package ${PKG} has an update! ${APP1}"
+                                echo "---------------------------"
+                                echo "Current version: ${APP2}"
+                        fi
+        APP1R=$(ls ${PKG}/rel | tr -d "'\"")
+        APP2R=$(ls ${REG}/${PKG}/rel)
+                        if [ $APP1R == $APP2R ]
+                        then
+                                true
+                        else
+                                echo "--------------------------"
+                                echo "Package ${PKG} has a new release! ${APP1R}"
+                                echo "--------------------------"
+                                echo "Current version: ${APP2R}"
+                        fi
+	if [ -f ${DIR}/info2 ]
+	then
+		mv ${REG}/${PKG} ${IGN}/${PKG}
+		rm ${DIR}/info2
+	else
+		true
+	fi
+        rm -rf ${UPDCHK}/*
+	rm ~/tmptmptmpsakuri
+                ;;
+	cha)
+                if [ -z "$2" ]
+                then
+                        true
+                else
+                        exit
+                fi
+		if [ -z "$(ls -A ${UPDALL})" ]
+		then
+		true
+		else
+		rm -rf ${UPDALL}/*
+		fi
+                ffile=info
+                cd ~
+		if [ -f "${ffile}" ]
+                then
+                        true
+                else
+                        touch info
+                fi
+		if [ -z "$(cat ${ffile})" ]
+		then
+			true
+		else
+			cat /dev/null > ${ffile}
+		fi
+		if [ -z "$(ls -A ${IGN})" ]
+		then
+			true
+		else
+			echo "Following packages will NOT be checked for updates:
+$(ls -A ${IGN})
+---------------"
+		fi
+                if [ -z "$(ls -A ${REG})" ]
+                then
+                        echo "There is nothing to do."
+                        exit
+                else
+                        true
+                fi
+                cd ${REG}
+                cp -a $(ls) ${UPDALL}
+                cd ${UPDALL}
+                for D in ./*
+                do
+                        D=${D%*/}
+                        rm -rf $D
+			echo "checking ${D##*/}..."
+			if [ -f ~/tmptmptmpsakuri ]
+				then
+			rm ~/tmptmptmpsakuri
+				else
+			touch ~/tmptmptmpsakuri
+			fi
+                        git clone https://aur.archlinux.org/${D##*/}.git > ~/tmptmptmpsakuri 2>&1
+			if cat ~/tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
+			then
+				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
+				rm ~/tmptmptmpsakuri
+				exit
+			else
+			if cat ~/tmptmptmpsakuri | grep warning &> /dev/null
+			then
+				echo -e "\033[0;31mIt seems like repository of ${D##*/} package not found. Try to check it on AUR, or add it to ignore list for get rid of this message.\033[0m"
+				rm ~/tmptmptmpsakuri
+				exit
+			fi
+			fi
+                        cd $D
+                        mkdir ../10trash10
+                        mv ./* ../10trash10
+                        mv ../10trash10/PKGBUILD ./PKGBUILD
+                        touch $(cat PKGBUILD | grep -m1 pkgver | cut -c8-100)
+                        mkdir rel
+                        cd rel
+                        touch $(cat ../PKGBUILD | grep -m1 pkgrel | cut -c8-100)
+                        cd ..
+                        rm PKGBUILD
+                        rm -rf ../10trash10
+                        cd ..
+                        APP1=$(ls -I rel ${D} | tr -d "'\"")
+                        APP2=$(ls -I rel ${REG}/${D})
+                        APP1R=$(ls ${D}/rel | tr -d "'\"")
+                        APP2R=$(ls ${REG}/${D}/rel)
+                        if [ $APP1 == $APP2 ]
+                        then
+                                true
+                        else
+                                echo "${D}   ${APP2} >> ${APP1}" | cut -c3-100 >> ~/info
+                        fi
+                        if [ $APP1R == $APP2R ]
+                        then
+                                true
+                        else
+                                echo "${D}   ${APP2R} --> ${APP1R}" | cut -c3-100 >> ~/info
+                        fi
+			rm ~/tmptmptmpsakuri
+                done
+                        echo "----------------"
+                        cd ~
+                        if [ -z "$(cat ${ffile})" ]
+                        then
+                                echo "Nothing to update"
+				rm -rf ${UPDALL}/*
+                                exit
+                        else
+                                true
+                        fi
+                        cat ~/info
+                        cat /dev/null > ~/info
+                        rm -rf ${UPDALL}/*
+                ;;
+        l)
+                ls ${REG}
+                ;;
+        c)
+                echo "Clean all cache? [y/n]"
+                read input
+                if [ $input == y ] &> /dev/null
+                then
+                        rm -rf ${DIR}/*
+                else
+                if [ $input == n ] &> /dev/null
+                then
+                        echo "Aborting"
+                else
+                true
+                fi
+        fi
+                ;;
+	cc)
+		echo "Clean all packages cache? [y/n]"
+		read inputv2
+		if [ $inputv2 == y ] &> /dev/null
+		then
+			cd ${DIR}
+			rm -rf $(ls -I gitpool -I ignore -I reg -I updall -I updchk)
+		else
+			echo "Try next time"
+			exit
+		fi
+		;;
+	s)
+		if [ -z "$2" ]
+	then
+		echo "Write what you need to search"
+		exit
+	else
+		nohup xdg-open http://google.com/search?q=site%3Aaur.archlinux.org+${PKG} &> /dev/null
+		fi
+		;;
+	g)
+		if [ -z "$2" ]
+	then
+		echo "Write what you need to ignore"
+		exit
+	else
+		true
+		fi
+if [ -d "${IGN}/${PKG}" ]
+	then
+		echo "You already have ${PKG} at ignore list"
+		exit
+	else
+		if [ -d "${REG}/${PKG}" ]
+		then
+		mv ${REG}/${PKG} ${IGN}/${PKG}
+		echo "${PKG} added to ignore list"
+	else
+		echo "You doesn't have ${PKG} inside registry"
+		fi
+fi	
+		;;
+	ug)
+		if [ -z "$2" ]
+	then
+		echo "Write what you need to unignore"
+		exit
+	else
+		true
+		fi
+		if [ -d "${IGN}/${PKG}" ]
+	then
+		mv ${IGN}/${PKG} ${REG}/${PKG}
+		echo "${PKG} unignored"
+	else
+		echo "You doesn't have ${PKG} at ignore list"
+		exit
+		fi
+		;;
+	u)
+		if [ -f ~/info ]; then if [ -z "$(cat ~/info)" ]; then true; else cat /dev/null > ~/info; fi; else true; fi
+		if [ -f ~/sakurisakuriinfo ]; then rm ~/sakurisakuriinfo; else true; fi
+                #if [ -z "$2" ]
+                #then
+                #        true
+                #else
+                #        exit
+                #fi
+		if [ -z "$(ls -A ${UPDALL})" ]
+		then
+		true
+		else
+		rm -rf ${UPDALL}/*
+		fi
+                ffile=info
+                cd ~
+		if [ -f "${ffile}" ]
+                then
+                        true
+                else
+                        touch info
+                fi
+		if [ -z "$(cat ${ffile})" ]
+		then
+			true
+		else
+			cat /dev/null > ${ffile}
+		fi
+		if [ -z "$(ls -A ${IGN})" ]
+		then
+			true
+		else
+		#	echo "Following packages will NOT be checked for updates:
+#$(ls -A ${IGN})
+#---------------"
+			true
+		fi
+                if [ -z "$(ls -A ${REG})" ]
+                then
+                        echo "There is nothing to do."
+                        exit
+                else
+                        true
+                fi
+                cd ${REG}
+                cp -a $(ls) ${UPDALL}
+                cd ${UPDALL}
+		echo Exploring updates...
+		echo "----------------"
+                for D in ./*
+                do
+                        D=${D%*/}
+                        rm -rf $D
+			echo "checking ${D##*/}..."
+			if [ -f ~/tmptmptmpsakuri ]
+				then
+			rm ~/tmptmptmpsakuri
+				else
+			touch ~/tmptmptmpsakuri
+			fi
+                        git clone https://aur.archlinux.org/${D##*/}.git > ~/tmptmptmpsakuri 2>&1
+			if cat ~/tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
+			then
+				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
+				if [ -f ${DIR}/infouser111 ]; then rm ${DIR}/infouser111; else true; fi
+				cat /dev/null > ~/info
+				rm ~/tmptmptmpsakuri
+				exit
+			else
+			if cat ~/tmptmptmpsakuri | grep warning &> /dev/null
+			then
+				echo -e "\033[0;31mIt seems like repository of ${D##*/} package not found. Try to check it on AUR, or add it to ignore list for get rid of this message.\033[0m"
+				if [ -f ${DIR}/infouser111 ]; then rm ${DIR}/infouser111; else true; fi
+				cat /dev/null > ~/info
+				rm ~/tmptmptmpsakuri
+				exit
+			fi
+			fi
+                        cd $D
+                        mkdir ../10trash10
+                        mv ./* ../10trash10
+                        mv ../10trash10/PKGBUILD ./PKGBUILD
+                        touch $(cat PKGBUILD | grep -m1 pkgver | cut -c8-100)
+                        mkdir rel
+                        cd rel
+                        touch $(cat ../PKGBUILD | grep -m1 pkgrel | cut -c8-100)
+                        cd ..
+                        rm PKGBUILD
+                        rm -rf ../10trash10
+                        cd ..
+                        APP1=$(ls -I rel ${D} | tr -d "'\"")
+                        APP2=$(ls -I rel ${REG}/${D})
+                        APP1R=$(ls ${D}/rel | tr -d "'\"")
+                        APP2R=$(ls ${REG}/${D}/rel)
+                        if [ $APP1 == $APP2 ]
+                        then
+                                true
+                        else
+                                echo "${D}   ${APP2} >> ${APP1}" | cut -c3-100 >> ${DIR}/infouser111
+				echo "${D}" | cut -c3-100 >> ~/info
+                        fi
+                        if [ $APP1R == $APP2R ]
+                        then
+                                true
+                        else
+                                echo "${D}   ${APP2R} --> ${APP1R}" | cut -c3-100 >> ${DIR}/infouser111
+				echo "${D}" | cut -c3-100 >> ~/info
+                        fi
+			rm ~/tmptmptmpsakuri
+                done
+                        #echo "----------------"
+                        cd ~
+                        if [ -z "$(cat ${ffile})" ]
+                        then
+				echo "-----------------"
+                                echo "Nothing to update"
+				rm -rf ${UPDALL}/*
+                                exit
+                        else
+                                true
+                        fi
+			echo "---------------"
+			cat ${DIR}/infouser111
+			rm ${DIR}/infouser111
+                        #cat ~/info
+                        #cat /dev/null > ~/info
+                        rm -rf ${UPDALL}/*
+			echo "Proceed with installation? [y/n]"
+			read superq
+			if [ $superq == y ] &> /dev/null
+			then
+			sort -u ~/info > ~/infosort
+			rm ~/info
+			mv ~/infosort ~/info
+			else
+			cat /dev/null > ~/info
+			exit
+			fi
+			echo Upgrading...
+			if [ -f ~/sakurisakurierror ]; then rm ~/sakurisakurierror; else true; fi
+			sleep 1
+			for F in `cat ~/info`
+			do
+				sakuri --back-i-- $F
+				if [ -f ${DIR}/.uu7 ]; then
+				if [ -z "$(cat ${DIR}/.uu7)" ]; then true; else
+				echo "$F" >> ~/sakurisakurierror
+				rm ${DIR}/.uu7
+				fi
+				else
+				true
+				fi
+			done
+			if [ -f ~/sakurisakurierror ]; then
+				for G in `cat ~/sakurisakurierror`
+				do
+					sakuri --back-ia-- $G;
+				done
+				else
+					true
+				fi
+			cat /dev/null > ~/info	
+			if [ -f ~/sakurisakurierror ]; then rm ~/sakurisakurierror; else true; fi
+                ;;
+	gl)
+		ls ${IGN}
+		;;
+	say)
+	echo "
+              _______________
+	     <Yaourt is dead.>
+	      ---------------
+	           \\
+		    \\
+		      ^__^
+		      (oo)\\______
+		      (__)\\|     )\\/\\
+		           ||---w)
+			   ||   ||"
+		;; 
+        w)
+                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m1.9.3\033[0m
+Here's a tips:
+        sakuri i (name of aur package) for install a package.
+	sakuri ia (name of aur package) for installing a package from cache.
+        sakuri r (name of aur package) for remove a package.
+        sakuri ch (name of aur package) for check package for updates.
+	sakuri cha for check all packages for updates.
+        sakuri c for cleaning all sakuri data.
+	sakuri cc for cleaning all sakuri packages cache data.
+        sakuri l for watch a registry folder
+        sakuri w for this welcome messege.
+	sakuri s (name of aur package) for search.
+	sakuri g (name of aur package) for ignore package for checking updates.
+	sakuri ug (name of aur package) for removing package from ignore list.
+	sakuri gl for watch on ignored packages.
+	sakuri u for updating all AUR packages.
+                I hope I helped you with organaizing your AUR apps. Thanks for using!
+\033[0;31mmade by Artemii Sudakov (t.me/heveat)\033[0m"
+                ;;
+        *)
+                echo -e "Uknown argument. Try \033[0;33msakuri w\033[0m for help."
+                ;;
+esac

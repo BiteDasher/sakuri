@@ -234,7 +234,7 @@ case "$1" in
 		fi
 			
 			source PKGBUILD
-                        pacman -Ssq | sort > .00SYNC
+                        pacman -Ssq | sort > .00PRESYNC
 			pacman -Qsq | sort >> .00PRESYNC
 			sort -u .00PRESYNC > .00SYNC
 			rm .00PRESYNC

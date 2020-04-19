@@ -1,52 +1,52 @@
 #!/bin/bash
-#if [ "$(echo $UID)" == 0 ]
-#then
-#	echo "It seems like you using this script as root. It may be dangerous."
-#	sleep 1
-#else
-#	true
-#fi
-DIR=~/sakuridir
-REG=~/sakuridir/reg
-DIRR=~/sakuridir/gitpool
-UPDCHK=~/sakuridir/updchk
-UPDALL=~/sakuridir/updall
-IGN=~/sakuridir/ignore
+DIR="$HOME/.config/sakuridir"
+REG="$HOME/.config/sakuridir/reg"
+DIRR="$HOME/.config/sakuridir/gitpool"
+UPDCHK="$HOME/.config/sakuridir/updchk"
+UPDALL="$HOME/.config/sakuridir/updall"
+IGN="$HOME/.config/sakuridir/ignore"
+CONFDIR="$HOME/.config"
+if [ -d "${CONFDIR}" ]
+then
+true
+else
+mkdir ~/.config
+fi
 if [ -d "${DIR}" ]
 then
 true
 else
-mkdir ~/sakuridir
+mkdir ~/.config/sakuridir
 fi
 if [ -d "${REG}" ]
 then
 true
 else
-mkdir -p ~/sakuridir/reg && chmod a+rw ~/sakuridir/reg
+mkdir -p ~/.config/sakuridir/reg && chmod a+rw ~/.config/sakuridir/reg
 fi
 if [ -d "${DIRR}" ]
 then
 true
 else
-mkdir -p ~/sakuridir/gitpool
+mkdir -p ~/.config/sakuridir/gitpool
 fi
 if [ -d "$UPDCHK" ]
 then
 true
 else
-mkdir -p ~/sakuridir/updchk
+mkdir -p ~/.config/sakuridir/updchk
 fi
 if [ -d "$UPDALL" ]
 then
 true
 else
-mkdir -p ~/sakuridir/updall
+mkdir -p ~/.config/sakuridir/updall
 fi
 if [ -d "$IGN" ]
 then
 true
 else
-mkdir -p ~/sakuridir/ignore
+mkdir -p ~/.config/sakuridir/ignore
 fi
 PKG=$2
 GITDIR=.git
@@ -466,7 +466,7 @@ case "$1" in
 			read qqq
 			if [ $qqq == y ] &> /dev/null
 			then
-			echo "${PKG}" >> ${DIR}/info2
+			echo "${PKG}" >> ${DIR}/.info2
 			mv ${IGN}/${PKG} ${REG}/${PKG}
 			else
 			exit
@@ -481,34 +481,34 @@ case "$1" in
                                 exit
                         fi
                         rm -rf ./*
-                        if [ -f ~/tmptmptmpsakuri ]
+                        if [ -f ${DIR}/.tmptmptmpsakuri ]
 				then
-			rm ~/tmptmptmpsakuri
+			rm ${DIR}/.tmptmptmpsakuri
 				else
-			touch ~/tmptmptmpsakuri
+			touch ${DIR}/.tmptmptmpsakuri
 			fi
-                        git clone https://aur.archlinux.org/${PKG}.git > ~/tmptmptmpsakuri 2>&1
-			if cat ~/tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
+                        git clone https://aur.archlinux.org/${PKG}.git > ${DIR}/.tmptmptmpsakuri 2>&1
+			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
-				rm ~/tmptmptmpsakuri
-				if [ -f ${DIR}/info2 ]
+				rm ${DIR}/.tmptmptmpsakuri
+				if [ -f ${DIR}/.info2 ]
 				then
 				mv ${REG}/${PKG} ${IGN}/${PKG}
-				rm ${DIR}/info2
+				rm ${DIR}/.info2
 				else
 				true
 				fi
 				exit
 			else
-			if cat ~/tmptmptmpsakuri | grep warning &> /dev/null
+			if cat ${DIR}/.tmptmptmpsakuri | grep warning &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like repository of ${PKG} package not found. Try to check it on AUR, or remove it by hand for get rid of this message.\033[0m"
-				rm ~/tmptmptmpsakuri
-				if [ -f ${DIR}/info2 ]
+				rm ${DIR}/.tmptmptmpsakuri
+				if [ -f ${DIR}/.info2 ]
 				then
 				mv ${REG}/${PKG} ${IGN}/${PKG}
-				rm ${DIR}/info2
+				rm ${DIR}/.info2
 				else
 				true
 				fi
@@ -552,15 +552,15 @@ case "$1" in
                                 echo "--------------------------"
                                 echo "Current version: ${APP2R}"
                         fi
-	if [ -f ${DIR}/info2 ]
+	if [ -f ${DIR}/.info2 ]
 	then
 		mv ${REG}/${PKG} ${IGN}/${PKG}
-		rm ${DIR}/info2
+		rm ${DIR}/.info2
 	else
 		true
 	fi
         rm -rf ${UPDCHK}/*
-	rm ~/tmptmptmpsakuri
+	rm ${DIR}/.tmptmptmpsakuri
                 ;;
 	cha)
                 if [ -z "$2" ]
@@ -575,13 +575,13 @@ case "$1" in
 		else
 		rm -rf ${UPDALL}/*
 		fi
-                ffile=info
+                ffile="${DIR}/.info"
                 cd ~
 		if [ -f "${ffile}" ]
                 then
                         true
                 else
-                        touch info
+                        touch ${DIR}/.info
                 fi
 		if [ -z "$(cat ${ffile})" ]
 		then
@@ -612,23 +612,23 @@ $(ls -A ${IGN})
                         D=${D%*/}
                         rm -rf $D
 			echo "checking ${D##*/}..."
-			if [ -f ~/tmptmptmpsakuri ]
+			if [ -f ${DIR}/.tmptmptmpsakuri ]
 				then
-			rm ~/tmptmptmpsakuri
+			rm ${DIR}/.tmptmptmpsakuri
 				else
-			touch ~/tmptmptmpsakuri
+			touch ${DIR}/.tmptmptmpsakuri
 			fi
-                        git clone https://aur.archlinux.org/${D##*/}.git > ~/tmptmptmpsakuri 2>&1
-			if cat ~/tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
+                        git clone https://aur.archlinux.org/${D##*/}.git > ${DIR}/.tmptmptmpsakuri 2>&1
+			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
-				rm ~/tmptmptmpsakuri
+				rm ${DIR}/.tmptmptmpsakuri
 				exit
 			else
-			if cat ~/tmptmptmpsakuri | grep warning &> /dev/null
+			if cat ${DIR}/.tmptmptmpsakuri | grep warning &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like repository of ${D##*/} package not found. Try to check it on AUR, or add it to ignore list for get rid of this message.\033[0m"
-				rm ~/tmptmptmpsakuri
+				rm ${DIR}/.tmptmptmpsakuri
 				exit
 			fi
 			fi
@@ -652,15 +652,15 @@ $(ls -A ${IGN})
                         then
                                 true
                         else
-                                echo "${D}   ${APP2} >> ${APP1}" | cut -c3-100 >> ~/info
+                                echo "${D}   ${APP2} >> ${APP1}" | cut -c3-100 >> ${DIR}/.info
                         fi
                         if [ $APP1R == $APP2R ]
                         then
                                 true
                         else
-                                echo "${D}   ${APP2R} --> ${APP1R}" | cut -c3-100 >> ~/info
+                                echo "${D}   ${APP2R} --> ${APP1R}" | cut -c3-100 >> ${DIR}/.info
                         fi
-			rm ~/tmptmptmpsakuri
+			rm ${DIR}/.tmptmptmpsakuri
                 done
                         echo "----------------"
                         cd ~
@@ -672,8 +672,8 @@ $(ls -A ${IGN})
                         else
                                 true
                         fi
-                        cat ~/info
-                        cat /dev/null > ~/info
+                        cat ${DIR}/.info
+                        cat /dev/null > ${DIR}/.info
                         rm -rf ${UPDALL}/*
                 ;;
         l)
@@ -755,8 +755,8 @@ fi
 		fi
 		;;
 	u)
-		if [ -f ~/info ]; then if [ -z "$(cat ~/info)" ]; then true; else cat /dev/null > ~/info; fi; else true; fi
-		if [ -f ~/sakurisakuriinfo ]; then rm ~/sakurisakuriinfo; else true; fi
+		if [ -f ${DIR}/.info ]; then if [ -z "$(cat ${DIR}/.info)" ]; then true; else cat /dev/null > ${DIR}/.info; fi; else true; fi
+		if [ -f ${DIR}/.sakurisakuriinfo ]; then rm ${DIR}/.sakurisakuriinfo; else true; fi
                 #if [ -z "$2" ]
                 #then
                 #        true
@@ -769,13 +769,13 @@ fi
 		else
 		rm -rf ${UPDALL}/*
 		fi
-                ffile=info
+                ffile="${DIR}/.info"
                 cd ~
 		if [ -f "${ffile}" ]
                 then
                         true
                 else
-                        touch info
+                        touch ${DIR}/.info
                 fi
 		if [ -z "$(cat ${ffile})" ]
 		then
@@ -809,27 +809,27 @@ fi
                         D=${D%*/}
                         rm -rf $D
 			echo "checking ${D##*/}..."
-			if [ -f ~/tmptmptmpsakuri ]
+			if [ -f ${DIR}/.tmptmptmpsakuri ]
 				then
-			rm ~/tmptmptmpsakuri
+			rm ${DIR}/.tmptmptmpsakuri
 				else
-			touch ~/tmptmptmpsakuri
+			touch ${DIR}/.tmptmptmpsakuri
 			fi
-                        git clone https://aur.archlinux.org/${D##*/}.git > ~/tmptmptmpsakuri 2>&1
-			if cat ~/tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
+                        git clone https://aur.archlinux.org/${D##*/}.git > ${DIR}/.tmptmptmpsakuri 2>&1
+			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
-				if [ -f ${DIR}/infouser111 ]; then rm ${DIR}/infouser111; else true; fi
-				cat /dev/null > ~/info
-				rm ~/tmptmptmpsakuri
+				if [ -f ${DIR}/.infouser111 ]; then rm ${DIR}/.infouser111; else true; fi
+				cat /dev/null > ${DIR}/.info
+				rm ${DIR}/.tmptmptmpsakuri
 				exit
 			else
-			if cat ~/tmptmptmpsakuri | grep warning &> /dev/null
+			if cat ${DIR}/.tmptmptmpsakuri | grep warning &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like repository of ${D##*/} package not found. Try to check it on AUR, or add it to ignore list for get rid of this message.\033[0m"
-				if [ -f ${DIR}/infouser111 ]; then rm ${DIR}/infouser111; else true; fi
-				cat /dev/null > ~/info
-				rm ~/tmptmptmpsakuri
+				if [ -f ${DIR}/.infouser111 ]; then rm ${DIR}/.infouser111; else true; fi
+				cat /dev/null > ${DIR}/.info
+				rm ${DIR}/.tmptmptmpsakuri
 				exit
 			fi
 			fi
@@ -853,17 +853,17 @@ fi
                         then
                                 true
                         else
-                                echo "${D}   ${APP2} >> ${APP1}" | cut -c3-100 >> ${DIR}/infouser111
-				echo "${D}" | cut -c3-100 >> ~/info
+                                echo "${D}   ${APP2} >> ${APP1}" | cut -c3-100 >> ${DIR}/.infouser111
+				echo "${D}" | cut -c3-100 >> ${DIR}/.info
                         fi
                         if [ $APP1R == $APP2R ]
                         then
                                 true
                         else
-                                echo "${D}   ${APP2R} --> ${APP1R}" | cut -c3-100 >> ${DIR}/infouser111
-				echo "${D}" | cut -c3-100 >> ~/info
+                                echo "${D}   ${APP2R} --> ${APP1R}" | cut -c3-100 >> ${DIR}/.infouser111
+				echo "${D}" | cut -c3-100 >> ${DIR}/.info
                         fi
-			rm ~/tmptmptmpsakuri
+			rm ${DIR}/.tmptmptmpsakuri
                 done
                         #echo "----------------"
                         cd ~
@@ -877,8 +877,8 @@ fi
                                 true
                         fi
 			echo "---------------"
-			cat ${DIR}/infouser111
-			rm ${DIR}/infouser111
+			cat ${DIR}/.infouser111
+			rm ${DIR}/.infouser111
                         #cat ~/info
                         #cat /dev/null > ~/info
                         rm -rf ${UPDALL}/*
@@ -886,38 +886,38 @@ fi
 			read superq
 			if [ $superq == y ] &> /dev/null
 			then
-			sort -u ~/info > ~/infosort
-			rm ~/info
-			mv ~/infosort ~/info
+			sort -u ${DIR}/.info > ${DIR}/.infosort
+			rm ${DIR}/.info
+			mv ${DIR}/.infosort ${DIR}/.info
 			else
-			cat /dev/null > ~/info
+			cat /dev/null > ${DIR}/.info
 			exit
 			fi
 			echo Upgrading...
-			if [ -f ~/sakurisakurierror ]; then rm ~/sakurisakurierror; else true; fi
+			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; else true; fi
 			sleep 1
-			for F in `cat ~/info`
+			for F in `cat ${DIR}/.info`
 			do
 				sakuri --back-i-- $F
 				if [ -f ${DIR}/.uu7 ]; then
 				if [ -z "$(cat ${DIR}/.uu7)" ]; then true; else
-				echo "$F" >> ~/sakurisakurierror
+				echo "$F" >> ${DIR}/.sakurisakurierror
 				rm ${DIR}/.uu7
 				fi
 				else
 				true
 				fi
 			done
-			if [ -f ~/sakurisakurierror ]; then
-				for G in `cat ~/sakurisakurierror`
+			if [ -f ${DIR}/.sakurisakurierror ]; then
+				for G in `cat ${DIR}/.sakurisakurierror`
 				do
 					sakuri --back-ia-- $G;
 				done
 				else
 					true
 				fi
-			cat /dev/null > ~/info	
-			if [ -f ~/sakurisakurierror ]; then rm ~/sakurisakurierror; else true; fi
+			cat /dev/null > ${DIR}/.info	
+			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; else true; fi
                 ;;
 	gl)
 		ls ${IGN}

@@ -58,20 +58,15 @@ rm -rf ${DIR}/rel &> /dev/null
 else
 true
 fi
-if [ -f "${DIR}/info2" ]
+if [ -f "${DIR}/.info2" ]
 then
-rm ${DIR}/info2
+rm ${DIR}/.info2
 else
 true
 fi
-if [ -z "$3" ]
-then
-	true
-else
-	exit
-fi
 case "$1" in
         i)
+		count=0
                 if [ -z "$2" ]
                 then
                         echo "Write what you need to install"
@@ -79,17 +74,30 @@ case "$1" in
                 else
                         true
                 fi
+		for PKG in ${@:2}
+		do
+		count=$((count+1))
+		ANSWER=YES
                 cd ${DIR}
                 if [ -d "${PKG}" ]
                 then
+			if (( $count > 1 )); then
+				if [ -d "${REG}/${PKG}" ]; then
+			echo -e "\033[0;32m(Reinstall/update package?)\033[0m [y/n]"
+			else
+			echo -e "\033[0;32m(Reinstall/update package?)\033[0m You already have a cache of this packahe. Remove it? [y/n]"
+			fi
+				else
                         echo "You already have a cache of this package. Remove it? [y/n]"
+			fi
                         read q
                 if [ $q == y ] &> /dev/null
                 then
                         rm -rf ${PKG}
+			ANSWER=YES
                 else
                         echo "Try next time"
-                        exit
+                        ANSWER=NO
                 fi
 	fi
 		if [ -d "${IGN}/${PKG}" ]
@@ -99,11 +107,18 @@ case "$1" in
 		if [ $q3 == y ] &> /dev/null
 		then
 			mv ${IGN}/${PKG} ${REG}/${PKG}
+			ANSWER=YES
 		else
 			echo "Try next time"
-			exit
+			ANSWER=NO
 		fi
 	fi
+		if [ $ANSWER ]; then
+		case $ANSWER in
+		NO)
+		true
+		;;
+		YES)
 		if [ -d "${REG}/${PKG}" ]
 		then
 			mv ${REG}/${PKG} ${REG}/\.${PKG}
@@ -195,8 +210,12 @@ case "$1" in
                         touch ${REG}/${PKG}/$(cat PKGBUILD | grep -m1 pkgver | cut -c8-100 | tr -d "'\"")
                         mkdir ${REG}/${PKG}/rel
                         touch ${REG}/${PKG}/rel/$(cat PKGBUILD | grep -m1 pkgrel | cut -c8-100 | tr -d "'\"")
-                fi
-                ;;
+                	fi
+                	;;
+		esac
+		fi
+	done
+			;;
 	ia)
 		
 		if [ -z $2 ]
@@ -295,7 +314,7 @@ case "$1" in
 			touch ${REG}/${PKG}/$(cat PKGBUILD | grep -m1 pkgver | cut -c8-100 | tr -d "'\"")
 			mkdir ${REG}/${PKG}/rel
 			touch ${REG}/${PKG}/rel/$(cat PKGBUILD | grep -m1 pkgrel | cut -c8-100 | tr -d "'\"")
-			;;	
+			;;
 	--back-ia--)
 		if [ -z $2 ]
 		then

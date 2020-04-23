@@ -85,7 +85,7 @@ case "$1" in
 				if [ -d "${REG}/${PKG}" ]; then
 			echo -e "\033[0;32m(Reinstall/update package?)\033[0m [y/n]"
 			else
-			echo -e "\033[0;32m(Reinstall/update package?)\033[0m You already have a cache of this packahe. Remove it? [y/n]"
+			echo -e "\033[0;32m(Reinstall/update package?)\033[0m You already have a cache of this package. Remove it? [y/n]"
 			fi
 				else
                         echo "You already have a cache of this package. Remove it? [y/n]"

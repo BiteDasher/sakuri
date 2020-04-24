@@ -4,7 +4,7 @@ Sh*t-coded bash script for AUR. Just to do something by myself.
 
 ## How-to use:
 
-  **sakuri i (name of aur package) for install a package.\
+  **sakuri i (names of aur packages) for install a package.\
 	sakuri ia (name of aur package) for installing a package from cache.\
   sakuri r (name of aur package) for remove a package.\
   sakuri ch (name of aur package) for check package for updates.\

@@ -808,12 +808,6 @@ fi
 	u)
 		if [ -f ${DIR}/.info ]; then if [ -z "$(cat ${DIR}/.info)" ]; then true; else cat /dev/null > ${DIR}/.info; fi; else true; fi
 		if [ -f ${DIR}/.sakurisakuriinfo ]; then rm ${DIR}/.sakurisakuriinfo; else true; fi
-                #if [ -z "$2" ]
-                #then
-                #        true
-                #else
-                #        exit
-                #fi
 		if [ -z "$(ls -A ${UPDALL})" ]
 		then
 		true

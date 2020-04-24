@@ -217,7 +217,6 @@ case "$1" in
 	done
 			;;
 	ia)
-		
 		if [ -z $2 ]
 		then
 			echo "Write what you need to install again"
@@ -225,12 +224,15 @@ case "$1" in
 		else
 			true
 		fi
+		ANSWER=YES
+		for PKG in ${@:2}
+		do
 		if [ -d "${DIR}/${PKG}" ]
 		then
-			true
+			ANSWER=YES
 		else
 			echo "Package directory doesn't exists."
-			exit
+			ANSWER=NO
 		fi
 		if [ -d "${IGN}/${PKG}" ]
 		then
@@ -239,11 +241,18 @@ case "$1" in
 		if [ $q33 == y ] &> /dev/null
 		then
 			mv ${IGN}/${PKG} ${REG}/${PKG}
+			ANSWER=YES
 		else
 			echo "Try next time"
-			exit
+			ANSWER=NO
 		fi
 	fi
+		if [ $ANSWER ]; then
+		case $ANSWER in
+		NO)
+		true
+		;;
+		YES)
 		cd ${DIR}/${PKG}
 		if [ -d "${REG}/${PKG}" ]
 		then
@@ -314,6 +323,10 @@ case "$1" in
 			touch ${REG}/${PKG}/$(cat PKGBUILD | grep -m1 pkgver | cut -c8-100 | tr -d "'\"")
 			mkdir ${REG}/${PKG}/rel
 			touch ${REG}/${PKG}/rel/$(cat PKGBUILD | grep -m1 pkgrel | cut -c8-100 | tr -d "'\"")
+			;;
+	esac
+			fi
+		done
 			;;
 	--back-ia--)
 		if [ -z $2 ]

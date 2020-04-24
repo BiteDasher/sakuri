@@ -706,7 +706,7 @@ $(ls -A ${IGN})
                         then
                                 true
                         else
-                                echo "${D}   ${APP2R} --> ${APP1R}" | cut -c3-100 >> ${DIR}/.info
+                                echo "${D} ● ${APP2R} --> ${APP1R} (pkgrel)" | cut -c3-100 >> ${DIR}/.info
                         fi
 			rm ${DIR}/.tmptmptmpsakuri
                 done
@@ -906,7 +906,7 @@ fi
                         then
                                 true
                         else
-                                echo "${D}   ${APP2R} --> ${APP1R}" | cut -c3-100 >> ${DIR}/.infouser111
+                                echo "${D} ● ${APP2R} --> ${APP1R} (pkgrel)" | cut -c3-100 >> ${DIR}/.infouser111
 				echo "${D}" | cut -c3-100 >> ${DIR}/.info
                         fi
 			rm ${DIR}/.tmptmptmpsakuri
@@ -982,7 +982,7 @@ fi
 			   ||   ||"
 		;; 
         w)
-                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m1.9.6\033[0m
+                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m1.9.7\033[0m
 Here's a tips:
         sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

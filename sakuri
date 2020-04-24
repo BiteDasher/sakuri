@@ -795,7 +795,7 @@ fi
 	else
 		true
 		fi
-		for PKG ${@:2}
+		for PKG in ${@:2}
 		do
 		if [ -d "${IGN}/${PKG}" ]
 	then
@@ -804,6 +804,7 @@ fi
 	else
 		echo -e "\033[0;33m[!] \033[0mYou doesn't have ${PKG} at ignore list"
 		fi
+		done
 		;;
 	u)
 		if [ -f ${DIR}/.info ]; then if [ -z "$(cat ${DIR}/.info)" ]; then true; else cat /dev/null > ${DIR}/.info; fi; else true; fi

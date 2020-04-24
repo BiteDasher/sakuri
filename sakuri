@@ -784,7 +784,8 @@ $(ls -A ${IGN})
 	else
 		echo -e "\033[0;31m[X] \033[0mYou doesn't have ${PKG} inside registry"
 		fi
-fi	
+fi
+		done
 		;;
 	ug)
 		if [ -z "$2" ]

@@ -400,21 +400,34 @@ case "$1" in
                 else
                 true
         fi
+		for PKG in ${@:2}
+		do
 		if [ -d "${IGN}/${PKG}" ]
 		then
 			echo "You are ignored this package. By deleting this package, you also will delete information about it in ignore list. Continue? [y/n]"
 			read q4
 			if [ $q4 == y ] &> /dev/null
 			then
-				rm -rf ${IGN}/${PKG}
-				sudo pacman -Rns ${PKG}
+				echo ${PKG} >> ${DIR}/.info
 			else
-				echo "Try next time"
-				exit
+				true
 			fi
 		fi
-        sudo pacman -Rns ${PKG}
-        rm -rf ${REG}/${PKG}
+		done
+		if [ -n "$(cat ${DIR}/.info)" ]; then
+		for PKGD in $(cat ${DIR}/\.info)
+		do
+		rm -rf ${IGN}/${PKG}
+		done
+		cat /dev/null > ${DIR}/.info
+	else
+		cat /dev/null > ${DIR}/.info
+		fi
+		for PKGR in ${@:2}
+		do
+		rm -rf ${REG}/${PKGR}
+		done
+		sudo pacman -Rns ${@:2}
                 ;;
 --back-i--)
                 cd ${DIR}
@@ -492,9 +505,11 @@ case "$1" in
                 else
 			true
 		fi
+		for PKG in ${@:2}
+		do
 		if [ -d "${IGN}/${PKG}" ]
 		then
-			echo "You have ignored this package. Check it? [y/n]"
+			echo "You have ignored ${PKG} package. Check it? [y/n]"
 			read qqq
 			if [ $qqq == y ] &> /dev/null
 			then
@@ -593,6 +608,7 @@ case "$1" in
 	fi
         rm -rf ${UPDCHK}/*
 	rm ${DIR}/.tmptmptmpsakuri
+		done
                 ;;
 	cha)
                 if [ -z "$2" ]
@@ -744,7 +760,7 @@ $(ls -A ${IGN})
 		echo "Write what you need to search"
 		exit
 	else
-		nohup xdg-open http://google.com/search?q=site%3Aaur.archlinux.org+${PKG} &> /dev/null
+		nohup xdg-open http://google.com/search?q=site%3Aaur.archlinux.org+${@:2} &> /dev/null
 		fi
 		;;
 	g)
@@ -755,17 +771,18 @@ $(ls -A ${IGN})
 	else
 		true
 		fi
-if [ -d "${IGN}/${PKG}" ]
+		for PKG in ${@:2}
+		do
+		if [ -d "${IGN}/${PKG}" ]
 	then
-		echo "You already have ${PKG} at ignore list"
-		exit
+		echo -e "\033[0;33m[!] \033[0mYou already have ${PKG} at ignore list"
 	else
 		if [ -d "${REG}/${PKG}" ]
 		then
 		mv ${REG}/${PKG} ${IGN}/${PKG}
-		echo "${PKG} added to ignore list"
+		echo -e "\033[0;32m[✓] \033[0m${PKG} added to ignore list"
 	else
-		echo "You doesn't have ${PKG} inside registry"
+		echo -e "\033[0;31m[X] \033[0mYou doesn't have ${PKG} inside registry"
 		fi
 fi	
 		;;
@@ -777,13 +794,14 @@ fi
 	else
 		true
 		fi
+		for PKG ${@:2}
+		do
 		if [ -d "${IGN}/${PKG}" ]
 	then
 		mv ${IGN}/${PKG} ${REG}/${PKG}
-		echo "${PKG} unignored"
+		echo -e "\033[0;32m[✓] \033[0m${PKG} unignored"
 	else
-		echo "You doesn't have ${PKG} at ignore list"
-		exit
+		echo -e "\033[0;33m[!] \033[0mYou doesn't have ${PKG} at ignore list"
 		fi
 		;;
 	u)

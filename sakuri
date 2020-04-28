@@ -26,6 +26,7 @@ mkdir ~/.config
 fi
 if [ -d "${DIR}" ]
 then
+true
 else
 mkdir ~/.config/sakuridir
 sakuri m first_time

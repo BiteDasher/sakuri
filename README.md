@@ -12,12 +12,13 @@ Sh*t-coded bash script for AUR. Just to do something by myself.
   sakuri c for cleaning all sakuri data.\
 	sakuri cc for cleaning all sakuri packages cache data.\
   sakuri l for watch a registry folder\
-  sakuri w for this welcome messege.\
+  sakuri w for this welcome message.\
 	sakuri s (name of aur package) for search.\
 	sakuri g (names of aur packages) for ignore package(s) for checking updates.\
 	sakuri ug (names of aur packages) for removing package(s) from ignore list.\
 	sakuri gl for watch on ignored packages.\
-	sakuri u for updating all AUR packages.**
+	sakuri u for updating all AUR packages.
+	sakuri m for import manually installed packages as sakuri registry database.**
 
 ## AUR git clone link:
 

@@ -6,6 +6,18 @@ UPDCHK="$HOME/.config/sakuridir/updchk"
 UPDALL="$HOME/.config/sakuridir/updall"
 IGN="$HOME/.config/sakuridir/ignore"
 CONFDIR="$HOME/.config"
+trapcom() {
+if [ -d ${REG}/\.${PKG} ]; then
+mv ${REG}/\.${PKG} ${REG}/${PKG}
+fi
+if [ -n "$(ls ${DIR}/*/.00* 2>/dev/null)" ]; then
+rm ${DIR}/*/.00*
+fi
+echo " "
+echo -e "\033[1;31mInterrupt signal recieved\033[0m"
+unset SAKURIE
+exit 1
+}
 if [ -d "${CONFDIR}" ]
 then
 true
@@ -400,6 +412,10 @@ case "$1" in
                 else
                 true
         fi
+		cat /dev/null > ${DIR}/.info
+		if [ -f ${DIR}/.info2 ]; then
+                rm ${DIR}/.info2
+                fi
 		for PKG in ${@:2}
 		do
 		if [ -d "${IGN}/${PKG}" ]
@@ -412,22 +428,32 @@ case "$1" in
 			else
 				true
 			fi
+			else
+		echo ${PKG} >> ${DIR}/.info2
 		fi
 		done
-		if [ -n "$(cat ${DIR}/.info)" ]; then
-		for PKGD in $(cat ${DIR}/\.info)
-		do
-		rm -rf ${IGN}/${PKG}
-		done
-		cat /dev/null > ${DIR}/.info
-	else
-		cat /dev/null > ${DIR}/.info
-		fi
+		tr "\n" " " < ${DIR}/.info2 >> ${DIR}/.info
+		sort -u ${DIR}/.info > ${DIR}/.info2
+                sudo pacman -Rns $(cat ${DIR}/.info2)
 		for PKGR in ${@:2}
 		do
-		rm -rf ${REG}/${PKGR}
-		done
-		sudo pacman -Rns ${@:2}
+		if [ -n "$(pacman -Qsq | grep -x ${PKGR})" ]; then
+                echo -e "Package \033[0;33m${PKGR}\033[0m wasn't uninstalled. Not delete registry folder..."
+        else
+                for PKGDIR in $(cat ${DIR}/.info2)
+                do
+                if [ -d ${REG}/${PKGDIR} ]; then
+                rm -rf ${REG}/${PKGR}
+        else
+                if [ -d ${IGN}/${PKGDIR} ]; then
+                rm -rf ${IGN}/${PKGR}
+                fi
+                fi
+                done
+                fi
+                done
+                rm ${DIR}/.info2
+                cat /dev/null > ${DIR}/.info
                 ;;
 --back-i--)
                 cd ${DIR}
@@ -802,7 +828,7 @@ fi
 		mv ${IGN}/${PKG} ${REG}/${PKG}
 		echo -e "\033[0;32m[✓] \033[0m${PKG} unignored"
 	else
-		echo -e "\033[0;33m[!] \033[0mYou doesn't have ${PKG} at ignore list"
+		echo -e "\033[0;33m[X] \033[0mYou doesn't have ${PKG} at ignore list"
 		fi
 		done
 		;;
@@ -982,7 +1008,7 @@ fi
 			   ||   ||"
 		;; 
         w)
-                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m1.9.7\033[0m
+                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m1.9.8\033[0m
 Here's a tips:
         sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

@@ -81,7 +81,6 @@ case "$1" in
                 then
 			if (( $count > 1 )); then
 			echo -e "\033[0;32m(Reinstall/update package?)\033[0m You already have a cache of this package. Remove it? [y/n]"
-			fi
 				else
                         echo "You already have a cache of this package. Remove it? [y/n]"
 			fi
@@ -94,6 +93,7 @@ case "$1" in
                         echo "Try next time"
                         ANSWER=NO
                 fi
+	fi
 		if [ -d "${IGN}/${PKG}" ]
 		then
 			echo "You are ignored this package. Remove folder from ignore list? [y/n]"
@@ -114,11 +114,11 @@ case "$1" in
 		;;
 		YES)
 		git clone https://aur.archlinux.org/${PKG}.git
-		if [ -d "${DIR}/${PKG}" ]; then 
+		if [ -d "${DIR}/${PKG}" ]; then
+		true
+	else	
 		echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
 		exit
-	else
-		true
 		fi
                 mv ${PKG}/${GITDIR} ${DIRR}
                 if [ -z "$(ls -A ${PKG})" ]
@@ -162,11 +162,12 @@ case "$1" in
                         do
                                 sakuri i $aurd
                         done
-			fi; fi
+			fi
                         makepkg -sir ||
 			echo -e $installerror
 			rm ${DIR}/*/.00*
 			exit
+			fi
                 	;;
 		esac
 		fi
@@ -799,7 +800,7 @@ fi
 			   ||   ||"
 		;; 
         w)
-                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.0.1\033[0m
+                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.0.2\033[0m
 Here's a tips:
         sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

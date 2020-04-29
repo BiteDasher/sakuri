@@ -309,14 +309,19 @@ case "$1" in
 			else
 				true
 			fi
+		else
+		echo ${PKG} >> ${DIR}/.info
 		fi
 		done
+		if [ -f ${DIR}/.info2 ]; then
 		tr "\n" " " < ${DIR}/.info2 >> ${DIR}/.info
+		fi
+		sort -u ${DIR}/.info > ${DIR}/.info2
                 sudo pacman -Rns $(cat ${DIR}/.info2)
 		for PKGR in ${@:2}
 		do
 		if [ -n "$(pacman -Qsq | grep -x ${PKGR})" ]; then
-                echo -e "Package \033[0;33m${PKGR}\033[0m wasn't uninstalled. Not delete registry folder..."
+                echo -e "Package \033[0;33m${PKGR}\033[0m wasn't uninstalled."
         else
                 for PKGDIR in $(cat ${DIR}/.info2)
                 do

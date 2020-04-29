@@ -401,13 +401,13 @@ case "$1" in
 			exit
 			fi
 		fi
-		if [ -z "$(pacman -Q | grep -x ${PKG})" ]
+		if [ -z "$(pacman -Qsq | grep -x ${PKG})" ]
                                 then
-                                        true
-                                else
-                                echo "---------------------------"
+				echo "---------------------------"
                                 echo "Package ${PKG} doesn't exists, or you doesn't have information about it in registry"
                                 exit
+                else
+                        true       
                         fi
                         rm -rf ./*
                         if [ -f ${DIR}/.tmptmptmpsakuri ]

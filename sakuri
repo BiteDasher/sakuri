@@ -12,7 +12,7 @@ fi
 echo " "
 echo -e "\033[1;31mInterrupt signal recieved\033[0m"
 unset SAKURIE
-exit 1
+exit
 }
 if [ -d "${CONFDIR}" ]
 then
@@ -262,11 +262,10 @@ case "$1" in
 			true
 		fi
 		if [ -z "$(pacman -Qsq | grep -x ${PKG})" ]
-		then
-			true
-		else
+		then	
 			echo "Package ${PKG} doesn't exists."
-			exit
+		else
+			true
 		fi
 		if [ -d "${IGN}/${PKG}" ]
 		then
@@ -356,6 +355,12 @@ case "$1" in
                         mv ${DIRR}/${GITDIR} ${PKG}
                         cd ${PKG}
                         makepkg -sir --noconfirm ||
+			if [ : ]
+			then
+			echo -e $installerror
+			export SAKURIE=1
+			echo error > ${DIR}/.uu7
+		else
 			echo -e $installerror
 			export SAKURIE=1
 			echo error > ${DIR}/.uu7
@@ -364,8 +369,9 @@ case "$1" in
 			unset SAKURIE
 			echo " "
 			else
-			unset SAKURIE
-                fi
+			true
+			fi
+		fi
                 ;;
         ch)
                 cd ${UPDCHK}
@@ -530,7 +536,7 @@ $(ls -A ${IGN})
                         cd $D
 			source PKGBUILD
                         APP1=${pkgver}-${pkgrel}
-                        APP2=$(pacman -Qm ${D##*/} | awk '{print $2;}')
+                        APP2=$(pacman -Q ${D##*/} | awk '{print $2;}' | rev | cut -d":" -f1 | rev)
                         if [ $APP1 == $APP2 ]
                         then
                                 true
@@ -711,7 +717,7 @@ fi
                         cd $D
 			source PKGBUILD
                         APP1=${pkgver}-${pkgrel}
-                        APP2=$(pacman -Qm ${D##*/} | awk '{print $2;}')
+                        APP2=$(pacman -Q ${D##*/} | awk '{print $2;}' | rev | cut -d":" -f1 | rev) 
                         if [ $APP1 == $APP2 ]
                         then
                                 true
@@ -752,22 +758,18 @@ fi
 			echo Upgrading...
 			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; else true; fi
 			sleep 1
-			for F in `cat ${DIR}/.info`
+			for F in $(cat ${DIR}/.info)
 			do
 				sakuri --back-i-- $F
 				if [ -f ${DIR}/.uu7 ]; then
-				if [ -z "$(cat ${DIR}/.uu7)" ]; then true; else
 				echo "$F" >> ${DIR}/.sakurisakurierror
 				rm ${DIR}/.uu7
 				fi
-				else
-				true
-				fi
 			done
 			if [ -f ${DIR}/.sakurisakurierror ]; then
-				for G in `cat ${DIR}/.sakurisakurierror`
+				for G in $(cat ${DIR}/.sakurisakurierror)
 				do
-					sakuri --back-ia-- $G;
+					sakuri --back-ia-- $G
 				done
 				else
 					true
@@ -792,7 +794,7 @@ fi
 			   ||   ||"
 		;; 
         w)
-                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m1.9.9\033[0m
+                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.0.0\033[0m
 Here's a tips:
         sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

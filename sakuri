@@ -160,7 +160,11 @@ case "$1" in
                         echo "----------------"
                         for aurd in `cat .00RESULT`
                         do
+				if [ -z "$(pacman -Qsq | grep -x $aurd)" ]; then
                                 sakuri i $aurd
+                        else
+				true
+				fi
                         done
 			fi
                         makepkg -sir ||
@@ -242,7 +246,11 @@ case "$1" in
                         echo "----------------"
                         for aurd in `cat .00RESULT`
                         do
+                                if [ -z "$(pacman -Qsq | grep -x $aurd)" ]; then
                                 sakuri i $aurd
+                        else
+				true
+				fi
                         done
 			fi
 			makepkg -sir ||

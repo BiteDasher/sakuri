@@ -444,7 +444,12 @@ case "$1" in
 			fi
                         cd ${PKG}
 			source PKGBUILD
-                        APP1=${pkgver}-${pkgrel}
+			if [ -n "${epoch}" ]; then
+                        APP1=${epoch}:${pkgver}-${pkgrel}
+		else
+			APP1=${pkgver}-${pkgrel}
+			fi
+			unset pkgver pkgrel epoch
                         APP2=$(pacman -Qm ${PKG} | awk '{print $2;}')
                         if [ $APP1 == $APP2 ]
                         then
@@ -541,8 +546,13 @@ $(ls -A ${IGN})
 			fi
                         cd $D
 			source PKGBUILD
-                        APP1=${pkgver}-${pkgrel}
-                        APP2=$(pacman -Q ${D##*/} | awk '{print $2;}' | rev | cut -d":" -f1 | rev)
+			if [ -n "$epoch" ]; then
+                        APP1=${epoch}:${pkgver}-${pkgrel}
+		else
+			APP1=${pkgver}-${pkgrel}
+			fi
+			unset pkgver pkgrel epoch
+                        APP2=$(pacman -Q ${D##*/} | awk '{print $2;}')
                         if [ $APP1 == $APP2 ]
                         then
                                 true
@@ -737,8 +747,13 @@ fi
 			fi
                         cd $D
 			source PKGBUILD
-                        APP1=${pkgver}-${pkgrel}
-                        APP2=$(pacman -Q ${D##*/} | awk '{print $2;}' | rev | cut -d":" -f1 | rev) 
+			if [ -n "$epoch" ]; then
+                        APP1=${epoch}:${pkgver}-${pkgrel}
+		else
+			APP1=${pkgver}-${pkgrel}
+			fi
+			unset pkgver pkgrel epoch
+                        APP2=$(pacman -Q ${D##*/} | awk '{print $2;}') 
                         if [ $APP1 == $APP2 ]
                         then
                                 true
@@ -815,7 +830,7 @@ fi
 			   ||   ||"
 		;; 
         w)
-                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.0.4\033[0m
+                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.0.5\033[0m
 Here's a tips:
         sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

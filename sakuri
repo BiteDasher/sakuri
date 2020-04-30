@@ -163,7 +163,14 @@ case "$1" in
 				if [ -z "$(pacman -Qsq | grep -x $aurd)" ]; then
                                 sakuri i $aurd
                         else
-				true
+				echo -e "\033[1;32m${aurd}\033[0m package already installed. Upgrade/reinstall it? [y/n]"
+				read aurq1
+				if [ $aurq1 == y ] &> /dev/null
+				then
+				sakuri i $aurd
+			else
+				echo -e "\033[1;31mSkipping...\033[0m"
+				fi
 				fi
                         done
 			fi
@@ -249,7 +256,14 @@ case "$1" in
                                 if [ -z "$(pacman -Qsq | grep -x $aurd)" ]; then
                                 sakuri i $aurd
                         else
-				true
+				echo -e "\033[1;32m${aurd}\033[0m package already installed. Upgrade/reinstall it? [y/n]"
+				read aurq2
+				if [ $aurq2 == y ] &> /dev/null
+				then
+				sakuri i $aurd
+			else
+				echo -e "\033[1;31mSkipping...\033[0m"
+				fi
 				fi
                         done
 			fi
@@ -526,7 +540,7 @@ $(ls -A ${IGN})
                 cd ${UPDALL}
 		touch $(pacman -Qmq)
 		if [ -z "$(ls ${IGN})" ]; then true; else
-		rm $(ls ${IGN}); fi
+		rm -f $(ls ${IGN}); fi
                 for D in ./*
                 do
                         D=${D%*/}
@@ -721,7 +735,7 @@ fi
                 cd ${UPDALL}
 		touch $(pacman -Qmq)
 		if [ -z "$(ls ${IGN})" ]; then true; else
-		rm $(ls ${IGN}); fi
+		rm -f $(ls ${IGN}); fi
 		echo Exploring updates...
 		echo "----------------"
                 for D in ./*

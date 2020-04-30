@@ -80,9 +80,9 @@ case "$1" in
                 if [ -d "${PKG}" ]
                 then
 			if (( $count > 1 )); then
-			echo -e "\033[0;32m(Reinstall/update package?)\033[0m You already have a cache of this package. Remove it? [y/n]"
+			echo -e "\033[0;32m(Reinstall/update package?)\033[0m You already have a cache of ${PKG} package. Remove it? [y/n]"
 				else
-                        echo "You already have a cache of this package. Remove it? [y/n]"
+                        echo "You already have a cache of ${PKG} package. Remove it? [y/n]"
 			fi
                         read q
                 if [ $q == y ] &> /dev/null
@@ -96,7 +96,7 @@ case "$1" in
 	fi
 		if [ -d "${IGN}/${PKG}" ]
 		then
-			echo "You are ignored this package. Remove folder from ignore list? [y/n]"
+			echo "You are ignored ${PKG} package. Remove it from ignore list? [y/n]"
 			read q3
 		if [ $q3 == y ] &> /dev/null
 		then
@@ -154,7 +154,7 @@ case "$1" in
 			then
 				true
 			else
-				rm ${DIR}/*/.00*
+				rm ${DIR}/*/.00* 2>/dev/null
 				exit
 			fi
                         echo "----------------"
@@ -240,7 +240,7 @@ case "$1" in
 			then
 				true
 			else
-				rm ${DIR}/*/.00*
+				rm ${DIR}/*/.00* 2>/dev/null
 				exit
 			fi
                         echo "----------------"

@@ -618,8 +618,8 @@ $(ls -A ${IGN})
         declare -a aur=("${!1}")
         CURL_JSN=$(curl -s $(echo "https://aur.archlinux.org/rpc/?v=5&type=search&by=name-desc&arg=""${aur[@]}" | sed -e 's/ /+/g'))
         OUT_STR=$(jq -r '.results | .[] | [.Name, .Version], .Description' <<< ${CURL_JSN})
-        SEARCH_OUT=$(sed -e 's/\\//g' -e 's/\[/\\033\[0\;36m\[/g' -e 's/",/\\033\[0m", \[\\033\[0\;32m/g' \
-        -e 's/\]/\\033\[0\m\]\\033\[0\m\]/g' <<< ${OUT_STR})
+        SEARCH_OUT=$(sed -e 's/\\//g' -e 's/\[/\\033\[0\;36m\[/g' -e 's/",/\\033\[1m", \[\\033\[0\;32m/g' \
+        -e 's/\]/\\033\[1\m\]\\033\[1\m\]/g' <<< ${OUT_STR})
         if [ "${OUT_STR}" == '' ]; then echo -e "\033[0;31mNo packages found.\033[0m"; exit; fi
         echo -ne "\033[1;33mSearch results:\033[0m"
         echo -e ${SEARCH_OUT} | sed -e 's/\[ /\n/g' -e 's/ *\] /\n\t/g' -e 's/", / /g' -e 's/"//g'

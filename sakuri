@@ -826,7 +826,7 @@ Here's a tips:
 	sakuri cc for cleaning all sakuri packages cache data.
 	sakuri l for watch manually (AUR) installed packages.
         sakuri w for this welcome message.
-	sakuri s (name of aur package) for search.
+	sakuri s (name of aur package) for search. (thanks to Salvatore Bellizzi (repofish))
 	sakuri g (names of aur packages) for ignore package(s) for checking updates.
 	sakuri ug (names of aur packages) for removing package(s) from ignore list.
 	sakuri gl for watch on ignored packages.

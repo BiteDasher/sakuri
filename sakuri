@@ -194,7 +194,7 @@ case "$1" in
 		then
 			ANSWER=YES
 		else
-			echo "Package directory doesn't exists."
+			echo "Package directory of ${PKG} doesn't exists."
 			ANSWER=NO
 		fi
 		if [ -d "${IGN}/${PKG}" ]

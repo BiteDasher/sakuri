@@ -168,9 +168,11 @@ case "$1" in
                         done
 			fi
                         makepkg -sir ||
+			if [ : ]; then
 			echo -e $installerror
 			rm ${DIR}/*/.00*
 			exit
+			fi
 			fi
                 	;;
 		esac
@@ -254,9 +256,11 @@ case "$1" in
                         done
 			fi
 			makepkg -sir ||
+			if [ : ]; then
 			echo -e $installerror
 			rm ${DIR}/*/.00*
 			exit
+			fi
 			;;
 	esac
 			fi
@@ -290,11 +294,8 @@ case "$1" in
 	fi
 		cd ${DIR}/${PKG}
 			makepkg -sir ||
-			export SAKURIE=1
+			if [ : ]; then
 			echo -e $installerror
-			if [ "$SAKURIE" == 1 ]; then
-			echo " "
-			unset SAKURIE
 			fi
 			;;
         r)
@@ -369,21 +370,10 @@ case "$1" in
                         mv ${DIRR}/${GITDIR} ${PKG}
                         cd ${PKG}
                         makepkg -sir --noconfirm ||
-			if [ : ]
-			then
+			if [ : ]; then
 			echo -e $installerror
 			export SAKURIE=1
 			echo error > ${DIR}/.uu7
-		else
-			echo -e $installerror
-			export SAKURIE=1
-			echo error > ${DIR}/.uu7
-			fi;
-			if [ "$SAKURIE" == 1 ]; then
-			unset SAKURIE
-			echo " "
-			else
-			true
 			fi
 		fi
                 ;;

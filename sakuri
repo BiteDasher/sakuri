@@ -94,7 +94,7 @@ case "$1" in
                         ANSWER=NO
                 fi
 	fi
-		if [ -d "${IGN}/${PKG}" ]
+		if [ -f "${IGN}/${PKG}" ]
 		then
 			echo "You are ignored ${PKG} package. Remove it from ignore list? [y/n]"
 			read q3
@@ -114,7 +114,7 @@ case "$1" in
 		;;
 		YES)
 		git clone https://aur.archlinux.org/${PKG}.git
-		if [ -d "${DIR}/${PKG}" ]; then
+		if [ -f "${DIR}/${PKG}" ]; then
 		true
 	else	
 		echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
@@ -197,7 +197,7 @@ case "$1" in
 			echo "Package directory of ${PKG} doesn't exists."
 			ANSWER=NO
 		fi
-		if [ -d "${IGN}/${PKG}" ]
+		if [ -f "${IGN}/${PKG}" ]
 		then
 			echo "You are ignored ${PKG} package. Remove it from ignore list? [y/n]"
 			read q33
@@ -280,7 +280,7 @@ case "$1" in
 		else
 			true
 		fi
-		if [ -d "${IGN}/${PKG}" ]
+		if [ -f "${IGN}/${PKG}" ]
 		then
 			echo "You are ignored ${PKG} package. Remove it from ignore list? [y/n]"
 			read q33
@@ -294,9 +294,7 @@ case "$1" in
 	fi
 		cd ${DIR}/${PKG}
 			makepkg -sir ||
-			{
 			echo -e $installerror
-			}
 			;;
         r)
                 if [ -z "$2" ]
@@ -309,15 +307,13 @@ case "$1" in
 		cat /dev/null > ${DIR}/.info
 		for PKG in ${@:2}
 		do
-		if [ -d "${IGN}/${PKG}" ]
+		if [ -f "${IGN}/${PKG}" ]
 		then
 			echo "You are ignored ${PKG} package. By deleting this package, you also will delete information about it in ignore list. Continue? [y/n]"
 			read q4
 			if [ $q4 == y ] &> /dev/null
 			then
 				echo ${PKG} >> ${DIR}/.info2
-			else
-				true
 			fi
 		else
 		echo ${PKG} >> ${DIR}/.info
@@ -349,8 +345,6 @@ case "$1" in
                 if [ -d "${PKG}" ]
                 then
                         rm -rf ${PKG}
-		else
-			true 
                 fi
 		git clone https://aur.archlinux.org/${PKG}.git
 		if [ -d "${DIR}/${PKG}" ]
@@ -422,8 +416,6 @@ case "$1" in
 				if [ -f ${DIR}/.info2 ]
 				then
 				rm ${DIR}/.info2
-				else
-				true
 				fi
 				exit
 			else
@@ -434,8 +426,6 @@ case "$1" in
 				if [ -f ${DIR}/.info2 ]
 				then
 				rm ${DIR}/.info2
-				else
-				true
 				fi
 				exit
 			fi
@@ -464,18 +454,14 @@ case "$1" in
 	if [ -f ${DIR}/.info2 ]
 	then
 		rm ${DIR}/.info2
-	else
-		true
 	fi
         rm -rf ${UPDCHK}/*
 	rm ${DIR}/.tmptmptmpsakuri
 		done
                 ;;
 	cha)
-                if [ -z "$2" ]
+                if [ -n "$2" ]
                 then
-                        true
-                else
                         exit
                 fi
 		if [ -z "$(ls -A ${UPDALL})" ]
@@ -510,12 +496,10 @@ $(ls -A ${IGN})
                 then
                         echo "There is nothing to do."
                         exit
-                else
-                        true
                 fi
                 cd ${UPDALL}
 		touch $(pacman -Qmq)
-		if [ -z "$(ls ${IGN})" ]; then true; else
+		if [ -n "$(ls ${IGN})" ]; then
 		rm -f $(ls ${IGN}); fi
                 for D in ./*
                 do
@@ -566,8 +550,6 @@ $(ls -A ${IGN})
                                 echo "Nothing to update"
 				rm -rf ${UPDALL}/*
                                 exit
-                        else
-                                true
                         fi
                         cat ${DIR}/.info
                         cat /dev/null > ${DIR}/.info
@@ -586,8 +568,6 @@ $(ls -A ${IGN})
                 if [ $input == n ] &> /dev/null
                 then
                         echo "Aborting"
-                else
-                true
                 fi
         fi
                 ;;
@@ -632,8 +612,6 @@ $(ls -A ${IGN})
 	then
 		echo "Write what you need to ignore"
 		exit
-	else
-		true
 		fi
 		for PKG in ${@:2}
 		do
@@ -655,8 +633,6 @@ fi
 	then
 		echo "Write what you need to unignore"
 		exit
-	else
-		true
 		fi
 		for PKG in ${@:2}
 		do
@@ -686,31 +662,18 @@ fi
                 else
                         touch ${DIR}/.info
                 fi
-		if [ -z "$(cat ${ffile})" ]
+		if [ -n "$(cat ${ffile})" ]
 		then
-			true
-		else
 			cat /dev/null > ${ffile}
-		fi
-		if [ -z "$(ls -A ${IGN})" ]
-		then
-			true
-		else
-		#	echo "Following packages will NOT be checked for updates:
-#$(ls -A ${IGN})
-#---------------"
-			true
 		fi
                 if [ -z "$(pacman -Qmq)" ]
                 then
                         echo "There is nothing to do."
                         exit
-                else
-                        true
                 fi
                 cd ${UPDALL}
 		touch $(pacman -Qmq)
-		if [ -z "$(ls ${IGN})" ]; then true; else
+		if [ -n "$(ls ${IGN})" ]; then
 		rm -f $(ls ${IGN}); fi
 		echo Exploring updates...
 		echo "----------------"
@@ -828,7 +791,7 @@ fi
 			   ||   ||"
 		;; 
         w)
-                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.1.0\033[0m
+                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.1.1\033[0m
 Here's a tips:
         sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

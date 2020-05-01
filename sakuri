@@ -622,7 +622,7 @@ fi
 		done
 		;;
 	u)
-		if [ -f ${DIR}/.info ]; then cat /dev/null > ${DIR}/.info; fi
+		if [ -f ${DIR}/.info ]; then cat /dev/null > ${DIR}/.info; else touch ${DIR}/.info; fi
 		if [ -f ${DIR}/.sakurisakuriinfo ]; then rm ${DIR}/.sakurisakuriinfo; else true; fi
 		if [ -n "$(ls -A ${UPDALL})" ]
 		then

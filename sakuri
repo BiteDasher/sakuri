@@ -114,9 +114,7 @@ case "$1" in
 		;;
 		YES)
 		git clone https://aur.archlinux.org/${PKG}.git
-		if [ -f "${DIR}/${PKG}" ]; then
-		true
-	else	
+		if ! [ -d "${DIR}/${PKG}" ]; then
 		echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
 		exit
 		fi
@@ -184,8 +182,6 @@ case "$1" in
 		then
 			echo "Write what you need to install again"
 			exit
-		else
-			true
 		fi
 		ANSWER=YES
 		for PKG in ${@:2}
@@ -271,14 +267,10 @@ case "$1" in
 		then
 			echo "Write what you need to install again"
 			exit
-		else
-			true
 		fi
 		if [ -z "$(pacman -Qsq | grep -x ${PKG})" ]
 		then	
 			echo "Package ${PKG} doesn't exists."
-		else
-			true
 		fi
 		if [ -f "${IGN}/${PKG}" ]
 		then
@@ -301,9 +293,7 @@ case "$1" in
                 then
                         echo "Write what you need to remove"
                         exit
-                else
-                true
-        fi
+        	fi
 		cat /dev/null > ${DIR}/.info
 		for PKG in ${@:2}
 		do
@@ -347,10 +337,8 @@ case "$1" in
                         rm -rf ${PKG}
                 fi
 		git clone https://aur.archlinux.org/${PKG}.git
-		if [ -d "${DIR}/${PKG}" ]
+		if ! [ -d "${DIR}/${PKG}" ]
 		then
-			true
-		else
 			echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
 			exit
 		fi
@@ -377,8 +365,6 @@ case "$1" in
                 then
                         echo "Write what you need to check"
                         exit
-                else
-			true
 		fi
 		for PKG in ${@:2}
 		do
@@ -397,9 +383,7 @@ case "$1" in
                                 then
 				echo "---------------------------"
                                 echo "Package ${PKG} doesn't exists, or you doesn't have information about it in registry"
-                                exit
-                else
-                        true       
+                                exit  
                         fi
                         rm -rf ./*
                         if [ -f ${DIR}/.tmptmptmpsakuri ]
@@ -464,30 +448,22 @@ case "$1" in
                 then
                         exit
                 fi
-		if [ -z "$(ls -A ${UPDALL})" ]
+		if [ -n "$(ls -A ${UPDALL})" ]
 		then
-		true
-		else
 		rm -rf ${UPDALL}/*
 		fi
                 ffile="${DIR}/.info"
                 cd ~
-		if [ -f "${ffile}" ]
+		if ! [ -f "${ffile}" ]
                 then
-                        true
-                else
                         touch ${DIR}/.info
                 fi
-		if [ -z "$(cat ${ffile})" ]
+		if [ -n "$(cat ${ffile})" ]
 		then
-			true
-		else
 			cat /dev/null > ${ffile}
 		fi
-		if [ -z "$(ls -A ${IGN})" ]
+		if [ -n "$(ls -A ${IGN})" ]
 		then
-			true
-		else
 			echo "Following packages will NOT be checked for updates:
 $(ls -A ${IGN})
 ---------------"
@@ -646,20 +622,16 @@ fi
 		done
 		;;
 	u)
-		if [ -f ${DIR}/.info ]; then if [ -z "$(cat ${DIR}/.info)" ]; then true; else cat /dev/null > ${DIR}/.info; fi; else true; fi
+		if [ -f ${DIR}/.info ]; then cat /dev/null > ${DIR}/.info; fi
 		if [ -f ${DIR}/.sakurisakuriinfo ]; then rm ${DIR}/.sakurisakuriinfo; else true; fi
-		if [ -z "$(ls -A ${UPDALL})" ]
+		if [ -n "$(ls -A ${UPDALL})" ]
 		then
-		true
-		else
 		rm -rf ${UPDALL}/*
 		fi
                 ffile="${DIR}/.info"
                 cd ~
-		if [ -f "${ffile}" ]
+		if ! [ -f "${ffile}" ]
                 then
-                        true
-                else
                         touch ${DIR}/.info
                 fi
 		if [ -n "$(cat ${ffile})" ]
@@ -692,7 +664,7 @@ fi
 			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
-				if [ -f ${DIR}/.infouser111 ]; then rm ${DIR}/.infouser111; else true; fi
+				if [ -f ${DIR}/.infouser111 ]; then rm ${DIR}/.infouser111; fi
 				cat /dev/null > ${DIR}/.info
 				rm ${DIR}/.tmptmptmpsakuri
 				exit
@@ -700,7 +672,7 @@ fi
 			if cat ${DIR}/.tmptmptmpsakuri | grep warning &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like repository of ${D##*/} package not found. Try to check it on AUR, or add it to ignore list for get rid of this message.\033[0m"
-				if [ -f ${DIR}/.infouser111 ]; then rm ${DIR}/.infouser111; else true; fi
+				if [ -f ${DIR}/.infouser111 ]; then rm ${DIR}/.infouser111; fi
 				cat /dev/null > ${DIR}/.info
 				rm ${DIR}/.tmptmptmpsakuri
 				exit
@@ -732,8 +704,6 @@ fi
                                 echo "Nothing to update"
 				rm -rf ${UPDALL}/*
                                 exit
-                        else
-                                true
                         fi
 			echo "---------------"
 			cat ${DIR}/.infouser111
@@ -772,7 +742,7 @@ fi
 					true
 				fi
 			cat /dev/null > ${DIR}/.info	
-			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; else true; fi
+			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; fi
                 ;;
 	gl)
 		ls ${IGN}
@@ -791,7 +761,7 @@ fi
 			   ||   ||"
 		;; 
         w)
-                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.1.1\033[0m
+                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.1.2\033[0m
 Here's a tips:
         sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

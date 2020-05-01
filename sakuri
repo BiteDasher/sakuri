@@ -5,14 +5,24 @@ UPDCHK="$HOME/.config/sakuridir/updchk"
 UPDALL="$HOME/.config/sakuridir/updall"
 IGN="$HOME/.config/sakuridir/ignore"
 CONFDIR="$HOME/.config"
+tlock() {
+touch ${DIR}/.db.lock
+}
+rmlock() {
+rm ${DIR}/.db.lock
+}
+chlock() {
+if [ -f ${DIR}/.db.lock ]; then echo -e "\033[1;31mSakuri is already running.\033[0m"; exit 1; fi
+}
 trapcom() {
 if [ -n "$(ls ${DIR}/*/.00* 2>/dev/null)" ]; then
 rm ${DIR}/*/.00*
 fi
 echo " "
 echo -e "\033[1;31mInterrupt signal recieved\033[0m"
+rmlock
 unset SAKURIE
-exit
+exit 1
 }
 if [ -d "${CONFDIR}" ]
 then
@@ -64,13 +74,14 @@ trap trapcom SIGTERM
 trap trapcom SIGINT
 case "$1" in
         i)
+		chlock
+		tlock
 		count=0
                 if [ -z "$2" ]
                 then
                         echo "Write what you need to install"
-                        exit
-                else
-                        true
+			rmlock
+                        exit 1
                 fi
 		for PKG in ${@:2}
 		do
@@ -116,7 +127,8 @@ case "$1" in
 		git clone https://aur.archlinux.org/${PKG}.git
 		if ! [ -d "${DIR}/${PKG}" ]; then
 		echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
-		exit
+		rmlock
+		exit 3
 		fi
                 mv ${PKG}/${GITDIR} ${DIRR}
                 if [ -z "$(ls -A ${PKG})" ]
@@ -153,7 +165,8 @@ case "$1" in
 				true
 			else
 				rm ${DIR}/*/.00* 2>/dev/null
-				exit
+				rmlock
+				exit 2
 			fi
                         echo "----------------"
                         for aurd in `cat .00RESULT`
@@ -169,19 +182,24 @@ case "$1" in
 			{
 			echo -e $installerror
 			rm ${DIR}/*/.00*
-			exit
+			rmlock
+			exit 4
 			}
 			fi
                 	;;
 		esac
 		fi
 	done
+			rmlock
 			;;
 	ia)
+		chlock
+		tlock
 		if [ -z $2 ]
 		then
 			echo "Write what you need to install again"
-			exit
+			rmlock
+			exit 1
 		fi
 		ANSWER=YES
 		for PKG in ${@:2}
@@ -239,7 +257,8 @@ case "$1" in
 				true
 			else
 				rm ${DIR}/*/.00* 2>/dev/null
-				exit
+				rmlock
+				exit 2
 			fi
                         echo "----------------"
                         for aurd in `cat .00RESULT`
@@ -255,7 +274,8 @@ case "$1" in
 			{
 			echo -e $installerror
 			rm ${DIR}/*/.00*
-			exit
+			rmlock
+			exit 4
 			}
 			;;
 	esac
@@ -266,33 +286,25 @@ case "$1" in
 		if [ -z $2 ]
 		then
 			echo "Write what you need to install again"
-			exit
+			exit 1
 		fi
 		if [ -z "$(pacman -Qsq | grep -x ${PKG})" ]
 		then	
 			echo "Package ${PKG} doesn't exists."
 		fi
-		if [ -f "${IGN}/${PKG}" ]
-		then
-			echo "You are ignored ${PKG} package. Remove it from ignore list? [y/n]"
-			read q33
-		if [ $q33 == y ] &> /dev/null
-		then
-			rm ${IGN}/${PKG}
-		else
-			echo "Try next time"
-			exit
-		fi
-	fi
 		cd ${DIR}/${PKG}
 			makepkg -sir ||
 			echo -e $installerror
+			echo " "
 			;;
         r)
+		chlock
+		tlock
                 if [ -z "$2" ]
                 then
                         echo "Write what you need to remove"
-                        exit
+			rmlock
+                        exit 1
         	fi
 		cat /dev/null > ${DIR}/.info
 		for PKG in ${@:2}
@@ -329,6 +341,7 @@ case "$1" in
                 done
                 rm ${DIR}/.info2
                 cat /dev/null > ${DIR}/.info
+		rmlock
                 ;;
 --back-i--)
                 cd ${DIR}
@@ -340,7 +353,7 @@ case "$1" in
 		if ! [ -d "${DIR}/${PKG}" ]
 		then
 			echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
-			exit
+			exit 3
 		fi
                 mv ${PKG}/${GITDIR} ${DIRR}
                 if [ -z "$(ls -A ${PKG})" ]
@@ -348,6 +361,7 @@ case "$1" in
                         echo "Empty dir, removing."
                         rm -rf ${PKG}
                         rm -rf ${DIRR}/${GITDIR}
+			echo " "
                 else
                         mv ${DIRR}/${GITDIR} ${PKG}
                         cd ${PKG}
@@ -357,14 +371,18 @@ case "$1" in
 			export SAKURIE=1
 			echo error > ${DIR}/.uu7
 			}
+			echo " "
 		fi
                 ;;
         ch)
+		chlock
+		tlock
                 cd ${UPDCHK}
                 if [ -z "$2" ]
                 then
                         echo "Write what you need to check"
-                        exit
+			rmlock
+                        exit 1
 		fi
 		for PKG in ${@:2}
 		do
@@ -376,14 +394,16 @@ case "$1" in
 			then
 			echo "${PKG}" >> ${DIR}/.info2
 			else
-			exit
+			rmlock
+			exit 2
 			fi
 		fi
 		if [ -z "$(pacman -Qsq | grep -x ${PKG})" ]
                                 then
 				echo "---------------------------"
                                 echo "Package ${PKG} doesn't exists, or you doesn't have information about it in registry"
-                                exit  
+				rmlock
+                                exit 1 
                         fi
                         rm -rf ./*
                         if [ -f ${DIR}/.tmptmptmpsakuri ]
@@ -401,7 +421,8 @@ case "$1" in
 				then
 				rm ${DIR}/.info2
 				fi
-				exit
+				rmlock
+				exit 3
 			else
 			if cat ${DIR}/.tmptmptmpsakuri | grep warning &> /dev/null
 			then
@@ -411,7 +432,8 @@ case "$1" in
 				then
 				rm ${DIR}/.info2
 				fi
-				exit
+				rmlock
+				exit 3
 			fi
 			fi
                         cd ${PKG}
@@ -442,11 +464,15 @@ case "$1" in
         rm -rf ${UPDCHK}/*
 	rm ${DIR}/.tmptmptmpsakuri
 		done
+		rmlock
                 ;;
 	cha)
+		chlock
+		tlock
                 if [ -n "$2" ]
                 then
-                        exit
+			rmlock
+                        exit 1
                 fi
 		if [ -n "$(ls -A ${UPDALL})" ]
 		then
@@ -471,7 +497,8 @@ $(ls -A ${IGN})
                 if [ -z "$(pacman -Qmq)" ]
                 then
                         echo "There is nothing to do."
-                        exit
+			rmlock
+                        exit 1
                 fi
                 cd ${UPDALL}
 		touch $(pacman -Qmq)
@@ -493,13 +520,15 @@ $(ls -A ${IGN})
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
 				rm ${DIR}/.tmptmptmpsakuri
-				exit
+				rmlock
+				exit 3
 			else
 			if cat ${DIR}/.tmptmptmpsakuri | grep warning &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like repository of ${D##*/} package not found. Try to check it on AUR, or add it to ignore list for get rid of this message.\033[0m"
 				rm ${DIR}/.tmptmptmpsakuri
-				exit
+				rmlock
+				exit 3
 			fi
 			fi
                         cd $D
@@ -525,11 +554,13 @@ $(ls -A ${IGN})
                         then
                                 echo "Nothing to update"
 				rm -rf ${UPDALL}/*
-                                exit
+				rmlock
+                                exit 1
                         fi
                         cat ${DIR}/.info
                         cat /dev/null > ${DIR}/.info
                         rm -rf ${UPDALL}/*
+			rmlock
                 ;;
         l)
                 pacman -Qmq
@@ -556,7 +587,7 @@ $(ls -A ${IGN})
 			rm -rf $(ls -I gitpool -I ignore -I reg -I updall -I updchk)
 		else
 			echo "Try next time"
-			exit
+			exit 2
 		fi
 		;;
 	s)
@@ -566,14 +597,14 @@ $(ls -A ${IGN})
         OUT_STR=$(jq -r '.results | .[] | [.Name, .Version], .Description' <<< ${CURL_JSN})
         SEARCH_OUT=$(sed -e 's/\\//g' -e 's/\[/\\033\[0\;36m\[/g' -e 's/",/\\033\[0m", \[\\033\[0\;32m/g' \
         -e 's/\]/\\033\[0\m\]\\033\[1\m\]/g' <<< ${OUT_STR})
-        if [ "${OUT_STR}" == '' ]; then echo -e "\033[0;31mNo packages found.\033[0m"; exit; fi
+        if [ "${OUT_STR}" == '' ]; then echo -e "\033[0;31mNo packages found.\033[0m"; exit 1; fi
         echo -ne "\033[1;33mSearch results:\033[0m"
         echo -e ${SEARCH_OUT} | sed -e 's/\[ /\n/g' -e 's/ *\] /\n\t/g' -e 's/", / /g' -e 's/"//g'
         }
                 if [ -z "$2" ]
         then
                 echo "Write what you need to search"
-                exit
+                exit 1
         else
                 N=2
                 while [ "${!N}" != '' ]; do
@@ -587,7 +618,7 @@ $(ls -A ${IGN})
 		if [ -z "$2" ]
 	then
 		echo "Write what you need to ignore"
-		exit
+		exit 1
 		fi
 		for PKG in ${@:2}
 		do
@@ -608,7 +639,7 @@ fi
 		if [ -z "$2" ]
 	then
 		echo "Write what you need to unignore"
-		exit
+		exit 1
 		fi
 		for PKG in ${@:2}
 		do
@@ -622,6 +653,8 @@ fi
 		done
 		;;
 	u)
+		chlock
+		tlock
 		if [ -f ${DIR}/.info ]; then cat /dev/null > ${DIR}/.info; else touch ${DIR}/.info; fi
 		if [ -f ${DIR}/.sakurisakuriinfo ]; then rm ${DIR}/.sakurisakuriinfo; else true; fi
 		if [ -n "$(ls -A ${UPDALL})" ]
@@ -641,7 +674,8 @@ fi
                 if [ -z "$(pacman -Qmq)" ]
                 then
                         echo "There is nothing to do."
-                        exit
+			rmlock
+                        exit 1
                 fi
                 cd ${UPDALL}
 		touch $(pacman -Qmq)
@@ -667,7 +701,8 @@ fi
 				if [ -f ${DIR}/.infouser111 ]; then rm ${DIR}/.infouser111; fi
 				cat /dev/null > ${DIR}/.info
 				rm ${DIR}/.tmptmptmpsakuri
-				exit
+				rmlock
+				exit 3
 			else
 			if cat ${DIR}/.tmptmptmpsakuri | grep warning &> /dev/null
 			then
@@ -675,7 +710,8 @@ fi
 				if [ -f ${DIR}/.infouser111 ]; then rm ${DIR}/.infouser111; fi
 				cat /dev/null > ${DIR}/.info
 				rm ${DIR}/.tmptmptmpsakuri
-				exit
+				rmlock
+				exit 3
 			fi
 			fi
                         cd $D
@@ -703,7 +739,8 @@ fi
 				echo "-----------------"
                                 echo "Nothing to update"
 				rm -rf ${UPDALL}/*
-                                exit
+				rmlock
+                                exit 1
                         fi
 			echo "---------------"
 			cat ${DIR}/.infouser111
@@ -720,7 +757,8 @@ fi
 			mv ${DIR}/.infosort ${DIR}/.info
 			else
 			cat /dev/null > ${DIR}/.info
-			exit
+			rmlock
+			exit 2
 			fi
 			echo Upgrading...
 			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; else true; fi
@@ -743,6 +781,7 @@ fi
 				fi
 			cat /dev/null > ${DIR}/.info	
 			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; fi
+			rmlock
                 ;;
 	gl)
 		ls ${IGN}

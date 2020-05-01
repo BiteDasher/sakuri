@@ -24,52 +24,17 @@ rmlock
 unset SAKURIE
 exit 1
 }
-if [ -d "${CONFDIR}" ]
-then
-true
-else
-mkdir ~/.config
-fi
-if [ -d "${DIR}" ]
-then
-true
-else
-mkdir ~/.config/sakuridir
-fi
-if [ -d "${DIRR}" ]
-then
-true
-else
-mkdir -p ~/.config/sakuridir/gitpool
-fi
-if [ -d "$UPDCHK" ]
-then
-true
-else
-mkdir -p ~/.config/sakuridir/updchk
-fi
-if [ -d "$UPDALL" ]
-then
-true
-else
-mkdir -p ~/.config/sakuridir/updall
-fi
-if [ -d "$IGN" ]
-then
-true
-else
-mkdir -p ~/.config/sakuridir/ignore
-fi
+if ! [ -d "${CONFDIR}" ]; then mkdir ~/.config; fi
+if ! [ -d "${DIR}" ]; then mkdir ~/.config/sakuridir; fi
+if ! [ -d "${DIRR}" ]; then mkdir -p ~/.config/sakuridir/gitpool; fi
+if ! [ -d "$UPDCHK" ]; then mkdir -p ~/.config/sakuridir/updchk; fi
+if ! [ -d "$UPDALL" ]; then mkdir -p ~/.config/sakuridir/updall; fi
+if ! [ -d "$IGN" ]; then mkdir -p ~/.config/sakuridir/ignore; fi
 PKG=$2
 GITDIR=.git
 installerror="\033[0;31mIt seems like after makepkg command something went wrong. Please check logs of pacman and try again.\033[0m"
 rm -rf ${DIRR}/.git
-if [ -f "${DIR}/.info2" ]
-then
-rm ${DIR}/.info2
-else
-true
-fi
+if [ -f "${DIR}/.info2" ]; then rm ${DIR}/.info2; fi
 trap trapcom SIGTERM
 trap trapcom SIGINT
 case "$1" in

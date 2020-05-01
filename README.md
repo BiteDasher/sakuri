@@ -18,6 +18,12 @@ Sh*t-coded bash script for AUR. Just to do something by myself.
 	sakuri ug (names of aur packages) for removing package(s) from ignore list.\
 	sakuri gl for watch on ignored packages.\
 	sakuri u for updating all AUR packages.**
+	
+Exit codes:
+1 - Standard error. User forgot to write what he wants to do.
+2 - Input error. User answered incorrectly or did not answer at all.
+3 - Internet error/package doesn't exists. User does not have internet access or package does not exist on AUR.
+4 - Makepkg error. Error in makepkg command.
 
 ## AUR git clone link:
 

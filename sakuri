@@ -168,11 +168,11 @@ case "$1" in
                         done
 			fi
                         makepkg -sir ||
-			if [ : ]; then
+			{
 			echo -e $installerror
 			rm ${DIR}/*/.00*
 			exit
-			fi
+			}
 			fi
                 	;;
 		esac
@@ -256,11 +256,11 @@ case "$1" in
                         done
 			fi
 			makepkg -sir ||
-			if [ : ]; then
+			{
 			echo -e $installerror
 			rm ${DIR}/*/.00*
 			exit
-			fi
+			}
 			;;
 	esac
 			fi
@@ -294,9 +294,9 @@ case "$1" in
 	fi
 		cd ${DIR}/${PKG}
 			makepkg -sir ||
-			if [ : ]; then
+			{
 			echo -e $installerror
-			fi
+			}
 			;;
         r)
                 if [ -z "$2" ]
@@ -370,11 +370,11 @@ case "$1" in
                         mv ${DIRR}/${GITDIR} ${PKG}
                         cd ${PKG}
                         makepkg -sir --noconfirm ||
-			if [ : ]; then
+			{
 			echo -e $installerror
 			export SAKURIE=1
 			echo error > ${DIR}/.uu7
-			fi
+			}
 		fi
                 ;;
         ch)
@@ -828,7 +828,7 @@ fi
 			   ||   ||"
 		;; 
         w)
-                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.0.9\033[0m
+                echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.1.0\033[0m
 Here's a tips:
         sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

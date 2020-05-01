@@ -12,7 +12,7 @@ rmlock() {
 rm -f ${DIR}/.db.lock
 }
 chlock() {
-if [ -f ${DIR}/.db.lock ]; then echo -e "\033[1;31mSakuri is already running.\033[0m"; exit 1; fi
+if [ -f ${DIR}/.db.lock ]; then echo -e "\033[1;31mSakuri is already running.\033[0m \nIf you are sure that this is a mistake, or you have forcibly completed the process, enter \033[0;33msakuri dbremove\033[0m to delete the lock file" ; exit 1; fi
 }
 trapcom() {
 if [ -n "$(ls ${DIR}/*/.00* 2>/dev/null)" ]; then
@@ -785,6 +785,9 @@ fi
                 ;;
 	gl)
 		ls ${IGN}
+		;;
+	dbremove)
+		rm -f ${DIR}/.db.lock
 		;;
 	say)
 	echo "

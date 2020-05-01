@@ -9,7 +9,7 @@ tlock() {
 touch ${DIR}/.db.lock
 }
 rmlock() {
-rm ${DIR}/.db.lock
+rm -f ${DIR}/.db.lock
 }
 chlock() {
 if [ -f ${DIR}/.db.lock ]; then echo -e "\033[1;31mSakuri is already running.\033[0m"; exit 1; fi

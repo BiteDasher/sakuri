@@ -38,7 +38,7 @@ if [ -f "${DIR}/.info2" ]; then rm ${DIR}/.info2; fi
 trap trapcom SIGTERM
 trap trapcom SIGINT
 case "$1" in
-        i)
+        i|-S)
 		if ! [ $SINSTALL ]; then
 		chlock
 		tlock
@@ -159,7 +159,7 @@ case "$1" in
 	done
 			if ! [ $SINSTALL ]; then rmlock; fi
 			;;
-	ia)
+	ia|-Sa)
 		chlock
 		tlock
 		if [ -z $2 ]; then echo "Write what you need to install again"; rmlock; exit 1; fi
@@ -258,7 +258,7 @@ case "$1" in
 			echo -e $installerror
 			echo " "
 			;;
-        r)
+        r|-R*)
 		chlock
 		tlock
                 if [ -z "$2" ]; then echo "Write what you need to remove"; rmlock; exit 1; fi
@@ -332,7 +332,7 @@ case "$1" in
 			echo " "
 		fi
                 ;;
-        ch)
+        ch|-Sy)
 		chlock
 		tlock
                 cd ${UPDCHK}
@@ -419,7 +419,7 @@ case "$1" in
 		done
 		rmlock
                 ;;
-	cha)
+	cha|-Su)
 		chlock
 		tlock
                 if [ -n "$2" ]; then rmlock; exit 1; fi
@@ -492,7 +492,7 @@ $(ls -A ${IGN})
                         rm -rf ${UPDALL}/*
 			rmlock
                 ;;
-        l)
+        l|-Q*)
                 pacman -Qmq
                 ;;
         c)
@@ -520,7 +520,7 @@ $(ls -A ${IGN})
 			exit 2
 		fi
 		;;
-	s)
+	s|-Ss)
         search_packages() {
         declare -a aur=("${!1}")
         CURL_JSN=$(curl -s $(echo "https://aur.archlinux.org/rpc/?v=5&type=search&by=name-desc&arg=""${aur[@]}" | sed -e 's/ /+/g'))
@@ -544,7 +544,7 @@ $(ls -A ${IGN})
                 search_packages keywords[@]
         fi
 		;;
-	g)
+	g|-G)
 		if [ -z "$2" ]; then echo "Write what you need to ignore"; exit 1; fi
 		for PKG in ${@:2}
 		do
@@ -561,7 +561,7 @@ fi
 		fi
 		done
 		;;
-	ug)
+	ug|-Gu)
 		if [ -z "$2" ]; then echo "Write what you need to unignore"; exit 1; fi
 		for PKG in ${@:2}
 		do
@@ -574,7 +574,7 @@ fi
 		fi
 		done
 		;;
-	u)
+	u|-Syu|-Suy)
 		chlock
 		tlock
 		if [ -f ${DIR}/.info ]; then cat /dev/null > ${DIR}/.info; else touch ${DIR}/.info; fi
@@ -681,7 +681,7 @@ fi
 			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; fi
 			rmlock
                 ;;
-	gl)
+	gl|-Gq)
 		ls ${IGN}
 		;;
 	dbremove)

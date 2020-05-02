@@ -39,8 +39,10 @@ trap trapcom SIGTERM
 trap trapcom SIGINT
 case "$1" in
         i)
+		if ! [ $SINSTALL ]; then
 		chlock
 		tlock
+		fi
 		count=0
                 if [ -z "$2" ]; then echo "Write what you need to install"; rmlock; exit 1; fi
 		for PKG in ${@:2}
@@ -129,11 +131,16 @@ case "$1" in
 				exit 2
 			fi
                         echo "----------------"
+			export SINSTALL=1
+			tlock
                         for aurd in `cat .00RESULT`
                         do
 				if [ -z "$(pacman -Qsq | grep -x $aurd)" ]; then
+				export SINSTALL=1
+				if ! [ -f ${DIR}/.db.lock ]; then tlock; fi
                                 sakuri i $aurd
                         else
+				export SINSTALL=1
 				echo -e "\033[1;32m${aurd}\033[0m already installed, \033[1;36mskipping...\033[0m"
 				fi
                         done
@@ -141,7 +148,7 @@ case "$1" in
                         makepkg -sir ||
 			{
 			echo -e $installerror
-			rm ${DIR}/*/.00*
+			rm -f ${DIR}/*/.00*
 			rmlock
 			exit 4
 			}
@@ -150,7 +157,7 @@ case "$1" in
 		esac
 		fi
 	done
-			rmlock
+			if ! [ $SINSTALL ]; then rmlock; fi
 			;;
 	ia)
 		chlock
@@ -216,11 +223,16 @@ case "$1" in
 				exit 2
 			fi
                         echo "----------------"
+			export SINSTALL=1
+			tlock
                         for aurd in `cat .00RESULT`
                         do
                                 if [ -z "$(pacman -Qsq | grep -x $aurd)" ]; then
+				export SINSTALL=1
+				if ! [ -f ${DIR}/.db.lock ]; then tlock; fi
                                 sakuri i $aurd
                         else
+				export SINSTALL=1
 				echo -e "\033[1;32m${aurd}\033[0m already installed, \033[1;36mskipping...\033[0m"
 				fi
                         done
@@ -228,7 +240,7 @@ case "$1" in
 			makepkg -sir ||
 			{
 			echo -e $installerror
-			rm ${DIR}/*/.00*
+			rm -f ${DIR}/*/.00*
 			rmlock
 			exit 4
 			}
@@ -236,6 +248,7 @@ case "$1" in
 	esac
 			fi
 		done
+			if ! [ $SINSTALL ]; then rmlock; fi
 			;;
 	--back-ia--)
 		if [ -z $2 ]; then echo "Write what you need to install again"; exit 1; fi

@@ -561,26 +561,12 @@ fi
 		tlock
 		if [ -f ${DIR}/.info ]; then cat /dev/null > ${DIR}/.info; else touch ${DIR}/.info; fi
 		if [ -f ${DIR}/.sakurisakuriinfo ]; then rm ${DIR}/.sakurisakuriinfo; else true; fi
-		if [ -n "$(ls -A ${UPDALL})" ]
-		then
-		rm -rf ${UPDALL}/*
-		fi
+		if [ -n "$(ls -A ${UPDALL})" ]; then rm -rf ${UPDALL}/* ; fi
                 ffile="${DIR}/.info"
                 cd ~
-		if ! [ -f "${ffile}" ]
-                then
-                        touch ${DIR}/.info
-                fi
-		if [ -n "$(cat ${ffile})" ]
-		then
-			cat /dev/null > ${ffile}
-		fi
-                if [ -z "$(pacman -Qmq)" ]
-                then
-                        echo "There is nothing to do."
-			rmlock
-                        exit 1
-                fi
+		if ! [ -f "${ffile}" ]; then touch ${DIR}/.info; fi
+		if [ -n "$(cat ${ffile})" ]; then cat /dev/null > ${ffile}; fi
+                if [ -z "$(pacman -Qmq)" ]; then echo "There is nothing to do."; rmlock; exit 1; fi
                 cd ${UPDALL}
 		touch $(pacman -Qmq)
 		if [ -n "$(ls ${IGN})" ]; then
@@ -702,7 +688,7 @@ fi
 			   ||   ||"
 		;; 
         w|-h|--help)
-		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.1.6f\033[0m
+		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.1.8\033[0m
 Here's a tips:
 	sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

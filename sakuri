@@ -238,7 +238,7 @@ case "$1" in
 		done
 			;;
 	--back-ia--)
-		if [ -z $2 ]; then; echo "Write what you need to install again"; exit 1; fi
+		if [ -z $2 ]; then echo "Write what you need to install again"; exit 1; fi
 		if [ -z "$(pacman -Qsq | grep -x ${PKG})" ]; then echo "Package ${PKG} doesn't exists."; fi
 		cd ${DIR}/${PKG}
 			makepkg -sir ||

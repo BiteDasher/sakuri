@@ -268,7 +268,12 @@ case "$1" in
 		tr "\n" " " < ${DIR}/.info2 >> ${DIR}/.info
 		fi
 		sort -u ${DIR}/.info > ${DIR}/.info2
+		if [ "$(command -v sudo)" ]; then
                 sudo pacman -Rns $(cat ${DIR}/.info2)
+	else
+		export FILEROOT=${DIR}/.info2
+		su -c "pacman -Rns $(cat $FILEROOT)" root
+		fi
 		for PKGR in ${@:2}
 		do
 		if [ -n "$(pacman -Qsq | grep -x ${PKGR})" ]; then

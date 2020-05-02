@@ -42,12 +42,7 @@ case "$1" in
 		chlock
 		tlock
 		count=0
-                if [ -z "$2" ]
-                then
-                        echo "Write what you need to install"
-			rmlock
-                        exit 1
-                fi
+                if [ -z "$2" ]; then echo "Write what you need to install"; rmlock; exit 1; fi
 		for PKG in ${@:2}
 		do
 		count=$((count+1))
@@ -160,12 +155,7 @@ case "$1" in
 	ia)
 		chlock
 		tlock
-		if [ -z $2 ]
-		then
-			echo "Write what you need to install again"
-			rmlock
-			exit 1
-		fi
+		if [ -z $2 ]; then echo "Write what you need to install again"; rmlock; exit 1; fi
 		ANSWER=YES
 		for PKG in ${@:2}
 		do
@@ -248,15 +238,8 @@ case "$1" in
 		done
 			;;
 	--back-ia--)
-		if [ -z $2 ]
-		then
-			echo "Write what you need to install again"
-			exit 1
-		fi
-		if [ -z "$(pacman -Qsq | grep -x ${PKG})" ]
-		then	
-			echo "Package ${PKG} doesn't exists."
-		fi
+		if [ -z $2 ]; then; echo "Write what you need to install again"; exit 1; fi
+		if [ -z "$(pacman -Qsq | grep -x ${PKG})" ]; then echo "Package ${PKG} doesn't exists."; fi
 		cd ${DIR}/${PKG}
 			makepkg -sir ||
 			echo -e $installerror
@@ -265,12 +248,7 @@ case "$1" in
         r)
 		chlock
 		tlock
-                if [ -z "$2" ]
-                then
-                        echo "Write what you need to remove"
-			rmlock
-                        exit 1
-        	fi
+                if [ -z "$2" ]; then echo "Write what you need to remove"; rmlock; exit 1; fi
 		cat /dev/null > ${DIR}/.info
 		for PKG in ${@:2}
 		do
@@ -310,10 +288,7 @@ case "$1" in
                 ;;
 --back-i--)
                 cd ${DIR}
-                if [ -d "${PKG}" ]
-                then
-                        rm -rf ${PKG}
-                fi
+                if [ -d "${PKG}" ]; then rm -rf ${PKG}; fi
 		git clone https://aur.archlinux.org/${PKG}.git
 		if ! [ -d "${DIR}/${PKG}" ]
 		then
@@ -343,12 +318,7 @@ case "$1" in
 		chlock
 		tlock
                 cd ${UPDCHK}
-                if [ -z "$2" ]
-                then
-                        echo "Write what you need to check"
-			rmlock
-                        exit 1
-		fi
+                if [ -z "$2" ]; then echo "Write what you need to check"; rmlock; exit 1; fi
 		for PKG in ${@:2}
 		do
 		if [ -d "${IGN}/${PKG}" ]
@@ -434,37 +404,19 @@ case "$1" in
 	cha)
 		chlock
 		tlock
-                if [ -n "$2" ]
-                then
-			rmlock
-                        exit 1
-                fi
-		if [ -n "$(ls -A ${UPDALL})" ]
-		then
-		rm -rf ${UPDALL}/*
-		fi
+                if [ -n "$2" ]; then rmlock; exit 1; fi
+		if [ -n "$(ls -A ${UPDALL})" ]; then rm -rf ${UPDALL}/* ; fi
                 ffile="${DIR}/.info"
                 cd ~
-		if ! [ -f "${ffile}" ]
-                then
-                        touch ${DIR}/.info
-                fi
-		if [ -n "$(cat ${ffile})" ]
-		then
-			cat /dev/null > ${ffile}
-		fi
+		if ! [ -f "${ffile}" ]; then touch ${DIR}/.info; fi
+		if [ -n "$(cat ${ffile})" ]; then cat /dev/null > ${ffile}; fi
 		if [ -n "$(ls -A ${IGN})" ]
 		then
 			echo "Following packages will NOT be checked for updates:
 $(ls -A ${IGN})
 ---------------"
 		fi
-                if [ -z "$(pacman -Qmq)" ]
-                then
-                        echo "There is nothing to do."
-			rmlock
-                        exit 1
-                fi
+                if [ -z "$(pacman -Qmq)" ]; then echo "There is nothing to do."; rmlock; exit 1; fi
                 cd ${UPDALL}
 		touch $(pacman -Qmq)
 		if [ -n "$(ls ${IGN})" ]; then
@@ -474,12 +426,7 @@ $(ls -A ${IGN})
                         D=${D%*/}
                         rm -rf $D
 			echo "checking ${D##*/}..."
-			if [ -f ${DIR}/.tmptmptmpsakuri ]
-				then
-			rm ${DIR}/.tmptmptmpsakuri
-				else
-			touch ${DIR}/.tmptmptmpsakuri
-			fi
+			if [ -f ${DIR}/.tmptmptmpsakuri ]; then rm ${DIR}/.tmptmptmpsakuri; else touch ${DIR}/.tmptmptmpsakuri; fi
                         git clone https://aur.archlinux.org/${D##*/}.git > ${DIR}/.tmptmptmpsakuri 2>&1
 			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
@@ -580,11 +527,7 @@ $(ls -A ${IGN})
         fi
 		;;
 	g)
-		if [ -z "$2" ]
-	then
-		echo "Write what you need to ignore"
-		exit 1
-		fi
+		if [ -z "$2" ]; then echo "Write what you need to ignore"; exit 1; fi
 		for PKG in ${@:2}
 		do
 		if [ -f "${IGN}/${PKG}" ]
@@ -601,11 +544,7 @@ fi
 		done
 		;;
 	ug)
-		if [ -z "$2" ]
-	then
-		echo "Write what you need to unignore"
-		exit 1
-		fi
+		if [ -z "$2" ]; then echo "Write what you need to unignore"; exit 1; fi
 		for PKG in ${@:2}
 		do
 		if [ -f "${IGN}/${PKG}" ]
@@ -653,12 +592,7 @@ fi
                         D=${D%*/}
                         rm -rf $D
 			echo "checking ${D##*/}..."
-			if [ -f ${DIR}/.tmptmptmpsakuri ]
-				then
-			rm ${DIR}/.tmptmptmpsakuri
-				else
-			touch ${DIR}/.tmptmptmpsakuri
-			fi
+			if [ -f ${DIR}/.tmptmptmpsakuri ]; then rm ${DIR}/.tmptmptmpsakuri; else touch ${DIR}/.tmptmptmpsakuri; fi
                         git clone https://aur.archlinux.org/${D##*/}.git > ${DIR}/.tmptmptmpsakuri 2>&1
 			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then

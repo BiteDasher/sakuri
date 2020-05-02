@@ -560,12 +560,9 @@ fi
 		chlock
 		tlock
 		if [ -f ${DIR}/.info ]; then cat /dev/null > ${DIR}/.info; else touch ${DIR}/.info; fi
-		if [ -f ${DIR}/.sakurisakuriinfo ]; then rm ${DIR}/.sakurisakuriinfo; else true; fi
+		if [ -f ${DIR}/.sakurisakuriinfo ]; then rm ${DIR}/.sakurisakuriinfo; fi
 		if [ -n "$(ls -A ${UPDALL})" ]; then rm -rf ${UPDALL}/* ; fi
                 ffile="${DIR}/.info"
-                cd ~
-		if ! [ -f "${ffile}" ]; then touch ${DIR}/.info; fi
-		if [ -n "$(cat ${ffile})" ]; then cat /dev/null > ${ffile}; fi
                 if [ -z "$(pacman -Qmq)" ]; then echo "There is nothing to do."; rmlock; exit 1; fi
                 cd ${UPDALL}
 		touch $(pacman -Qmq)
@@ -630,8 +627,6 @@ fi
 			echo "---------------"
 			cat ${DIR}/.infouser111
 			rm ${DIR}/.infouser111
-                        #cat ~/info
-                        #cat /dev/null > ~/info
                         rm -rf ${UPDALL}/*
 			echo "Proceed with installation? [y/n]"
 			read superq
@@ -646,7 +641,7 @@ fi
 			exit 2
 			fi
 			echo Upgrading...
-			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; else true; fi
+			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; fi
 			sleep 1
 			for F in $(cat ${DIR}/.info)
 			do

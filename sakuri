@@ -421,7 +421,7 @@ case "$1" in
 		done
 		rmlock
                 ;;
-	cha|-Su)
+	cha|-Syy)
 		chlock
 		tlock
                 if [ -n "$2" ]; then rmlock; exit 1; fi

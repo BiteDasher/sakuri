@@ -144,6 +144,7 @@ case "$1" in
 				echo -e "\033[1;32m${aurd}\033[0m already installed, \033[1;36mskipping...\033[0m"
 				fi
                         done
+			unset SINSTALL
 			fi
                         makepkg -sir ||
 			{
@@ -236,6 +237,7 @@ case "$1" in
 				echo -e "\033[1;32m${aurd}\033[0m already installed, \033[1;36mskipping...\033[0m"
 				fi
                         done
+			unset SINSTALL
 			fi
 			makepkg -sir ||
 			{

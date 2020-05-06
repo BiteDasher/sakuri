@@ -25,9 +25,6 @@ Sh*t-coded bash script for AUR. Just to do something by myself.
 3 - Internet error/package doesn't exists. User does not have internet access or package does not exist on AUR. \
 4 - Makepkg error. Error in makepkg command.
 
-# Thanks to:
-https://t.me/bruhLinkToMe: for help in writing code for id networks
-
 ## AUR git clone link:
 
 https://aur.archlinux.org/sakuri.git

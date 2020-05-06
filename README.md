@@ -26,7 +26,7 @@ Sh*t-coded bash script for AUR. Just to do something by myself.
 4 - Makepkg error. Error in makepkg command.
 
 # Thanks to:
-https://t.me/bruhLinkToMe for help in writing code for id networks
+https://t.me/bruhLinkToMe: for help in writing code for id networks
 
 ## AUR git clone link:
 

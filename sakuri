@@ -58,27 +58,27 @@ case "$1" in
                         echo "You already have a cache of ${PKG} package. Remove it? [y/n]"
 			fi
                         read q
-                if [ $q == y ] &> /dev/null
-                then
+                case "$q" in
+                ""|Y*|y*)
                         rm -rf ${PKG}
 			ANSWER=YES
-                else
+                ;; *)
                         echo "Try next time"
                         ANSWER=NO
-                fi
+		esac
 	fi
 		if [ -f "${IGN}/${PKG}" ]
 		then
 			echo "You are ignored ${PKG} package. Remove it from ignore list? [y/n]"
 			read q3
-		if [ $q3 == y ] &> /dev/null
-		then
+		case "$q3" in
+		""|Y*|y*)
 			rm -rf ${IGN}/${PKG}
 			ANSWER=YES
-		else
+		;; *)
 			echo "Try next time"
 			ANSWER=NO
-		fi
+		esac
 	fi
 		if [ $ANSWER ]; then
 		case $ANSWER in
@@ -122,14 +122,14 @@ case "$1" in
 			cat .00RESULT
                         echo -e "\033[0;31mIt seems that package you tries to install has AUR dependencies. Install them? [y/n]\033[0m"
 			read alphaq
-			if [ $alphaq == y ] &> /dev/null
-			then
+			case "$alphaq" in
+			""|Y*|y*)
 				true
-			else
+			;; *)
 				rm ${DIR}/*/.00* 2>/dev/null
 				rmlock
 				exit 2
-			fi
+			esac
                         echo "----------------"
 			export SINSTALL=1
 			tlock
@@ -178,14 +178,14 @@ case "$1" in
 		then
 			echo "You are ignored ${PKG} package. Remove it from ignore list? [y/n]"
 			read q33
-		if [ $q33 == y ] &> /dev/null
-		then
+		case "$q33" in
+		""|Y*|y*)
 			rm ${IGN}/${PKG}
 			ANSWER=YES
-		else
+		;; *)
 			echo "Try next time"
 			ANSWER=NO
-		fi
+		esac
 	fi
 		if [ $ANSWER ]; then
 		case $ANSWER in
@@ -215,14 +215,14 @@ case "$1" in
 			cat .00RESULT
                         echo -e "\033[0;31mIt seems that package you tries to install has AUR dependencies. Install them? [y/n]\033[0m"
 			read alphaq
-			if [ $alphaq == y ] &> /dev/null
-			then
+			case "$alphaq" in
+			""|Y*|y*)
 				true
-			else
+			;; *)
 				rm ${DIR}/*/.00* 2>/dev/null
 				rmlock
 				exit 2
-			fi
+			esac
                         echo "----------------"
 			export SINSTALL=1
 			tlock
@@ -271,10 +271,10 @@ case "$1" in
 		then
 			echo "You are ignored ${PKG} package. By deleting this package, you also will delete information about it in ignore list. Continue? [y/n]"
 			read q4
-			if [ $q4 == y ] &> /dev/null
-			then
+			case "$q4" in
+			""|Y*|y*)
 				echo ${PKG} >> ${DIR}/.info2
-			fi
+			;; esac
 		else
 		echo ${PKG} >> ${DIR}/.info
 		fi
@@ -345,13 +345,13 @@ case "$1" in
 		then
 			echo "You have ignored ${PKG} package. Check it? [y/n]"
 			read qqq
-			if [ $qqq == y ] &> /dev/null
-			then
+			case "$qqq" in
+			""|Y*|y*)
 			echo "${PKG}" >> ${DIR}/.info2
-			else
+			;; *)
 			rmlock
 			exit 2
-			fi
+			esac
 		fi
 		if [ -z "$(pacman -Qsq | grep -x ${PKG})" ]
                                 then
@@ -516,7 +516,7 @@ $(ls -A ${IGN})
 		if [ $inputv2 == y ] &> /dev/null
 		then
 			cd ${DIR}
-			rm -rf $(ls -I gitpool -I ignore -I reg -I updall -I updchk)
+			rm -rf $(ls -I gitpool -I ignore -I updall -I updchk)
 		else
 			echo "Try next time"
 			exit 2
@@ -650,16 +650,16 @@ fi
                         rm -rf ${UPDALL}/*
 			echo "Proceed with installation? [y/n]"
 			read superq
-			if [ $superq == y ] &> /dev/null
-			then
+			case "$superq" in
+			""|Y*|y*)
 			sort -u ${DIR}/.info > ${DIR}/.infosort
 			rm ${DIR}/.info
 			mv ${DIR}/.infosort ${DIR}/.info
-			else
+			;; *)
 			cat /dev/null > ${DIR}/.info
 			rmlock
 			exit 2
-			fi
+			esac
 			echo Upgrading...
 			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; fi
 			sleep 1
@@ -703,7 +703,7 @@ fi
 			   ||   ||"
 		;; 
         w|-h|--help)
-		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.2.1\033[0m
+		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.2.2\033[0m
 Here's a tips:
 	sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

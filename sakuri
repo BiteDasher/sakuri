@@ -117,7 +117,7 @@ case "$1" in
                         rm .00AUR
                         mv .00AUR2 .00AUR
                         diff .00SYNC .00AUR | grep -e ">" | cut -d" " -f2 > .00RESULT
-                        if [ -z "$(cat .00RESULT)" ]; then true; else
+                        if [ -z "$(cat .00RESULT)" ]; then rm ${DIR}/${PKG}/.00* ; else
 			echo "----------------"
 			cat .00RESULT
                         echo -e "\033[0;31mIt seems that package you tries to install has AUR dependencies. Install them? [y/n]\033[0m"
@@ -210,7 +210,7 @@ case "$1" in
                         rm .00AUR
                         mv .00AUR2 .00AUR
                         diff .00SYNC .00AUR | grep -e ">" | cut -d" " -f2 > .00RESULT
-                        if [ -z "$(cat .00RESULT)" ]; then true; else
+                        if [ -z "$(cat .00RESULT)" ]; then rm ${DIR}/${PKG}/.00* ; else
 			echo "----------------"
 			cat .00RESULT
                         echo -e "\033[0;31mIt seems that package you tries to install has AUR dependencies. Install them? [y/n]\033[0m"
@@ -703,7 +703,7 @@ fi
 			   ||   ||"
 		;; 
         w|-h|--help)
-		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.2.2\033[0m
+		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.2.3\033[0m
 Here's a tips:
 	sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

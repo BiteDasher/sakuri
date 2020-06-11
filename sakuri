@@ -101,7 +101,7 @@ case "$1" in
                 else
                         mv ${DIRR}/${GITDIR} ${PKG}
                         cd ${PKG}
-			eval $(source PKGBUILD; echo -e "depends=("${depends[@]}")"; echo "makedepends=("${makedepends[@]}")";)
+			eval $(source PKGBUILD; echo "depends=("${depends[@]}")"; echo "makedepends=("${makedepends[@]}")";)
                         pacman -Ssq | sort > .00PRESYNC
 			pacman -Qsq | sort >> .00PRESYNC
 			sort -u .00PRESYNC > .00SYNC

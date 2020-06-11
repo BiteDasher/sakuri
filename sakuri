@@ -101,7 +101,7 @@ case "$1" in
                 else
                         mv ${DIRR}/${GITDIR} ${PKG}
                         cd ${PKG}
-			source PKGBUILD
+			eval $(source PKGBUILD; echo -e "depends=("${depends[@]}")"; echo "makedepends=("${makedepends[@]}")";)
                         pacman -Ssq | sort > .00PRESYNC
 			pacman -Qsq | sort >> .00PRESYNC
 			sort -u .00PRESYNC > .00SYNC
@@ -194,7 +194,7 @@ case "$1" in
 		;;
 		YES)
 			cd ${DIR}/${PKG}
-			source PKGBUILD
+			eval $(source PKGBUILD; echo -e "depends=("${depends[@]}")"; echo "makedepends=("${makedepends[@]}")";)
                         pacman -Ssq | sort > .00PRESYNC
 			pacman -Qsq | sort >> .00PRESYNC
 			sort -u .00PRESYNC > .00SYNC
@@ -703,7 +703,7 @@ fi
 			   ||   ||"
 		;; 
         w|-h|--help)
-		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.2.4\033[0m
+		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.2.5\033[0m
 Here's a tips:
 	sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

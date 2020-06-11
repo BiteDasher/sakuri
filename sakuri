@@ -86,7 +86,7 @@ case "$1" in
 		true
 		;;
 		YES)
-		git clone https://aur.archlinux.org/${PKG}.git
+		git clone --depth 1 https://aur.archlinux.org/${PKG}.git
 		if ! [ -d "${DIR}/${PKG}" ]; then
 		echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
 		rmlock
@@ -309,7 +309,7 @@ case "$1" in
 --back-i--)
                 cd ${DIR}
                 if [ -d "${PKG}" ]; then rm -rf ${PKG}; fi
-		git clone https://aur.archlinux.org/${PKG}.git
+		git clone --depth 1 https://aur.archlinux.org/${PKG}.git
 		if ! [ -d "${DIR}/${PKG}" ]
 		then
 			echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
@@ -367,7 +367,7 @@ case "$1" in
 				else
 			touch ${DIR}/.tmptmptmpsakuri
 			fi
-                        git clone https://aur.archlinux.org/${PKG}.git > ${DIR}/.tmptmptmpsakuri 2>&1
+                        git clone --depth 1 https://aur.archlinux.org/${PKG}.git > ${DIR}/.tmptmptmpsakuri 2>&1
 			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
@@ -392,14 +392,14 @@ case "$1" in
 			fi
 			fi
                         cd ${PKG}
-			source PKGBUILD
+			eval $(source PKGBUILD; echo pkgver="$pkgver"; echo pkgrel="$pkgrel"; echo epoch="$epoch";)
 			if [ -n "${epoch}" ]; then
                         APP1=${epoch}:${pkgver}-${pkgrel}
 		else
 			APP1=${pkgver}-${pkgrel}
 			fi
 			unset pkgver pkgrel epoch
-                        APP2=$(pacman -Qm ${PKG} | awk '{print $2;}')
+                        APP2=$(pacman -Qm ${PKG} | cut -d" " -f2-)
                         if [ $APP1 == $APP2 ]
                         then
                                 echo "---------------------------"
@@ -447,7 +447,7 @@ $(ls -A ${IGN})
                         rm -rf $D
 			echo "checking ${D##*/}..."
 			if [ -f ${DIR}/.tmptmptmpsakuri ]; then rm ${DIR}/.tmptmptmpsakuri; else touch ${DIR}/.tmptmptmpsakuri; fi
-                        git clone https://aur.archlinux.org/${D##*/}.git > ${DIR}/.tmptmptmpsakuri 2>&1
+                        git clone --depth 1 https://aur.archlinux.org/${D##*/}.git > ${DIR}/.tmptmptmpsakuri 2>&1
 			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
@@ -464,14 +464,14 @@ $(ls -A ${IGN})
 			fi
 			fi
                         cd $D
-			source PKGBUILD
+			eval $(source PKGBUILD; echo pkgver="$pkgver"; echo pkgrel="$pkgrel"; echo epoch="$epoch";)
 			if [ -n "$epoch" ]; then
                         APP1=${epoch}:${pkgver}-${pkgrel}
 		else
 			APP1=${pkgver}-${pkgrel}
 			fi
 			unset pkgver pkgrel epoch
-                        APP2=$(pacman -Q ${D##*/} | awk '{print $2;}')
+                        APP2=$(pacman -Q ${D##*/} | cut -d" " -f2-)
                         if [ $APP1 == $APP2 ]
                         then
                                 true
@@ -596,7 +596,7 @@ fi
                         rm -rf $D
 			echo "checking ${D##*/}..."
 			if [ -f ${DIR}/.tmptmptmpsakuri ]; then rm ${DIR}/.tmptmptmpsakuri; else touch ${DIR}/.tmptmptmpsakuri; fi
-                        git clone https://aur.archlinux.org/${D##*/}.git > ${DIR}/.tmptmptmpsakuri 2>&1
+                        git clone --depth 1 https://aur.archlinux.org/${D##*/}.git > ${DIR}/.tmptmptmpsakuri 2>&1
 			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
@@ -617,14 +617,14 @@ fi
 			fi
 			fi
                         cd $D
-			source PKGBUILD
+			eval $(source PKGBUILD; echo pkgver="$pkgver"; echo pkgrel="$pkgrel"; echo epoch="$epoch";)
 			if [ -n "$epoch" ]; then
                         APP1=${epoch}:${pkgver}-${pkgrel}
 		else
 			APP1=${pkgver}-${pkgrel}
 			fi
 			unset pkgver pkgrel epoch
-                        APP2=$(pacman -Q ${D##*/} | awk '{print $2;}') 
+                        APP2=$(pacman -Q ${D##*/} | cut -d" " -f2-) 
                         if [ $APP1 == $APP2 ]
                         then
                                 true
@@ -703,7 +703,7 @@ fi
 			   ||   ||"
 		;; 
         w|-h|--help)
-		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.2.3\033[0m
+		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.2.4\033[0m
 Here's a tips:
 	sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.

@@ -124,12 +124,6 @@ case "$1" in
 			read alphaq
 			case "$alphaq" in
 			""|Y*|y*)
-				true
-			;; *)
-				rm ${DIR}/*/.00* 2>/dev/null
-				rmlock
-				exit 2
-			esac
                         echo "----------------"
 			export SINSTALL=1
 			tlock
@@ -145,6 +139,9 @@ case "$1" in
 				fi
                         done
 			unset SINSTALL
+			;; *)
+			true ;;
+			esac
 			fi
                         makepkg -sir ||
 			{
@@ -217,12 +214,6 @@ case "$1" in
 			read alphaq
 			case "$alphaq" in
 			""|Y*|y*)
-				true
-			;; *)
-				rm ${DIR}/*/.00* 2>/dev/null
-				rmlock
-				exit 2
-			esac
                         echo "----------------"
 			export SINSTALL=1
 			tlock
@@ -238,6 +229,9 @@ case "$1" in
 				fi
                         done
 			unset SINSTALL
+			;; *)
+			true ;;
+			esac
 			fi
 			makepkg -sir ||
 			{

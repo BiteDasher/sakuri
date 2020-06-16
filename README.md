@@ -1,6 +1,13 @@
 # sakuri
 
-Sh*t-coded bash script for AUR. Just to do something by myself.
+Self-written bash script for AUR. Just to do something by myself.
+
+## Dependencies:
+jq: parse json \
+git: clone from AUR \
+curl: git dependency \
+bash: of course \
+sed: parse information
 
 ## How-to use:
 

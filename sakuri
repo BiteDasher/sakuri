@@ -24,6 +24,24 @@ rmlock
 unset SAKURIE
 exit 1
 }
+search_packages() {
+	declare -a aur=("${!1}")
+	CURL_JSN=$(curl -s $(echo "https://aur.archlinux.org/rpc/?v=5&type=search&by=name-desc&arg=""${aur[@]}" | sed -e 's/ /+/g'))
+	if [ "$ACCURATE" == 1 ]; then
+	OUT_STR=$(jq -r '.results | .[] | [.Name, .Version]' <<< ${CURL_JSN})
+	SEARCH_OUT="$(echo -e $OUT_STR | sed -e 's/\[ /\n/g' -e 's/ *\][[:blank:]]*//g' -e 's/, / /g' -e 's/"//g')"
+	else
+	OUT_STR=$(jq -r '.results | .[] | [.Name, .Version], .Description' <<< ${CURL_JSN})
+	SEARCH_OUT=$(sed -e 's/\\//g' -e 's/\[/\\033\[0\;36m\[/g' -e 's/",/\\033\[0m", \[\\033\[0\;32m/g' \
+	-e 's/\]/\\033\[0\m\]\\033\[1\m\]/g' <<< ${OUT_STR})
+	fi
+	if [ "${OUT_STR}" == '' ]; then echo -e "\033[0;31mNo packages found.\033[0m"; exit 1; fi
+	echo -ne "\033[1;33mSearch results:\033[0m"
+	if [ "$ACCURATE" == 1 ]; then
+	echo "${SEARCH_OUT}"; else
+	echo -e ${SEARCH_OUT} | sed -e 's/\[ /\n/g' -e 's/ *\] /\n\t/g' -e 's/", / /g' -e 's/"//g'
+	fi
+}
 if ! [ -d "${CONFDIR}" ]; then mkdir ~/.config; fi
 if ! [ -d "${DIR}" ]; then mkdir ~/.config/sakuridir; fi
 if ! [ -d "${DIRR}" ]; then mkdir -p ~/.config/sakuridir/gitpool; fi
@@ -38,33 +56,33 @@ if [ -f "${DIR}/.info2" ]; then rm ${DIR}/.info2; fi
 trap trapcom SIGTERM
 trap trapcom SIGINT
 case "$1" in
-        i|-S)
+	i|-S)
 		if ! [ $SINSTALL ]; then
 		chlock
 		tlock
 		fi
 		count=0
-                if [ -z "$2" ]; then echo "Write what you need to install"; rmlock; exit 1; fi
+		if [ -z "$2" ]; then echo "Write what you need to install"; rmlock; exit 1; fi
 		for PKG in ${@:2}
 		do
 		count=$((count+1))
 		ANSWER=YES
-                cd ${DIR}
-                if [ -d "${PKG}" ]
-                then
+		cd ${DIR}
+		if [ -d "${PKG}" ]
+		then
 			if (( $count > 1 )); then
 			echo -e "\033[0;32m(Reinstall/update package?)\033[0m You already have a cache of ${PKG} package. Remove it? [y/n]"
 				else
-                        echo "You already have a cache of ${PKG} package. Remove it? [y/n]"
+			echo "You already have a cache of ${PKG} package. Remove it? [y/n]"
 			fi
-                        read q
-                case "$q" in
-                ""|Y*|y*)
-                        rm -rf ${PKG}
+			read q
+		case "$q" in
+		""|Y*|y*)
+			rm -rf ${PKG}
 			ANSWER=YES
-                ;; *)
-                        echo "Try next time"
-                        ANSWER=NO
+		;; *)
+			echo "Try next time"
+			ANSWER=NO
 		esac
 	fi
 		if [ -f "${IGN}/${PKG}" ]
@@ -92,58 +110,58 @@ case "$1" in
 		rmlock
 		exit 3
 		fi
-                mv ${PKG}/${GITDIR} ${DIRR}
-                if [ -z "$(ls -A ${PKG})" ]
-                then
-                        echo "Empty dir, removing."
-                        rm -rf ${PKG}
-                        rm -rf ${DIRR}/${GITDIR}
-                else
-                        mv ${DIRR}/${GITDIR} ${PKG}
-                        cd ${PKG}
+		mv ${PKG}/${GITDIR} ${DIRR}
+		if [ -z "$(ls -A ${PKG})" ]
+		then
+			echo "Empty dir, removing."
+			rm -rf ${PKG}
+			rm -rf ${DIRR}/${GITDIR}
+		else
+			mv ${DIRR}/${GITDIR} ${PKG}
+			cd ${PKG}
 			eval $(source PKGBUILD; /bin/echo "depends=($(/bin/echo ${depends[@]} | sed "s/[^[:space:],]\+/'&'/g"))"; /bin/echo "makedepends=($(/bin/echo ${depends[@]} | sed "s/[^[:space:],]\+/'&'/g"))";)
-                        pacman -Ssq | sort > .00PRESYNC
+			pacman -Ssq | sort > .00PRESYNC
 			pacman -Qsq | sort >> .00PRESYNC
 			sort -u .00PRESYNC > .00SYNC
 			rm .00PRESYNC
 			if [[ -z "${depends[@]}" ]]; then true; else
-                        echo ${depends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 > .00AUR
+			echo ${depends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 > .00AUR
 			fi
 			if [[ -z "${makedepends[@]}" ]]; then true; else
-                        echo ${makedepends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 >> .00AUR
+			echo ${makedepends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 >> .00AUR
 			fi
 			if [ -f \.00AUR ]; then true; else touch \.00AUR; fi
-                        sort -u .00AUR > .00AUR2
-                        rm .00AUR
-                        mv .00AUR2 .00AUR
-                        diff .00SYNC .00AUR | grep -e ">" | cut -d" " -f2 > .00RESULT
-                        if [ -z "$(cat .00RESULT)" ]; then rm ${DIR}/${PKG}/.00* ; else
+			sort -u .00AUR > .00AUR2
+			rm .00AUR
+			mv .00AUR2 .00AUR
+			diff .00SYNC .00AUR | grep -e ">" | cut -d" " -f2 > .00RESULT
+			if [ -z "$(cat .00RESULT)" ]; then rm ${DIR}/${PKG}/.00* ; else
 			echo "----------------"
 			cat .00RESULT
-                        echo -e "\033[0;31mIt seems that package you tries to install has AUR dependencies. Install them? [y/n]\033[0m"
+			echo -e "\033[0;31mIt seems that package you tries to install has AUR dependencies. Install them? [y/n]\033[0m"
 			read alphaq
 			case "$alphaq" in
 			""|Y*|y*)
-                        echo "----------------"
+			echo "----------------"
 			export SINSTALL=1
 			tlock
-                        for aurd in `cat .00RESULT`
-                        do
+			for aurd in `cat .00RESULT`
+			do
 				if [ -z "$(pacman -Qsq | grep -x $aurd)" ]; then
 				export SINSTALL=1
 				if ! [ -f ${DIR}/.db.lock ]; then tlock; fi
-                                sakuri i $aurd
-                        else
+				sakuri i $aurd
+			else
 				export SINSTALL=1
 				echo -e "\033[1;32m${aurd}\033[0m already installed, \033[1;36mskipping...\033[0m"
 				fi
-                        done
+			done
 			unset SINSTALL
 			;; *)
 			true ;;
 			esac
 			fi
-                        makepkg -sir ||
+			makepkg -sir ||
 			{
 			echo -e $installerror
 			rm -f ${DIR}/*/.00*
@@ -151,7 +169,7 @@ case "$1" in
 			exit 4
 			}
 			fi
-                	;;
+			;;
 		esac
 		fi
 	done
@@ -192,42 +210,42 @@ case "$1" in
 		YES)
 			cd ${DIR}/${PKG}
 			eval $(source PKGBUILD; /bin/echo "depends=($(/bin/echo ${depends[@]} | sed "s/[^[:space:],]\+/'&'/g"))"; /bin/echo "makedepends=($(/bin/echo ${depends[@]} | sed "s/[^[:space:],]\+/'&'/g"))";)
-                        pacman -Ssq | sort > .00PRESYNC
+			pacman -Ssq | sort > .00PRESYNC
 			pacman -Qsq | sort >> .00PRESYNC
 			sort -u .00PRESYNC > .00SYNC
 			rm .00PRESYNC
 			if [[ -z "${depends[@]}" ]]; then true; else
-                        echo ${depends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 > .00AUR
+			echo ${depends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 > .00AUR
 			fi
 			if [[ -z "${makedepends[@]}" ]]; then true; else
-                        echo ${makedepends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 >> .00AUR
+			echo ${makedepends[@]} | tr ' ' '\n' | sort | cut -d "<" -f 1 | cut -d ">" -f 1 | cut -d "=" -f 1 >> .00AUR
 			fi
 			if [ -f \.00AUR ]; then true; else touch \.00AUR; fi
-                        sort -u .00AUR > .00AUR2
-                        rm .00AUR
-                        mv .00AUR2 .00AUR
-                        diff .00SYNC .00AUR | grep -e ">" | cut -d" " -f2 > .00RESULT
-                        if [ -z "$(cat .00RESULT)" ]; then rm ${DIR}/${PKG}/.00* ; else
+			sort -u .00AUR > .00AUR2
+			rm .00AUR
+			mv .00AUR2 .00AUR
+			diff .00SYNC .00AUR | grep -e ">" | cut -d" " -f2 > .00RESULT
+			if [ -z "$(cat .00RESULT)" ]; then rm ${DIR}/${PKG}/.00* ; else
 			echo "----------------"
 			cat .00RESULT
-                        echo -e "\033[0;31mIt seems that package you tries to install has AUR dependencies. Install them? [y/n]\033[0m"
+			echo -e "\033[0;31mIt seems that package you tries to install has AUR dependencies. Install them? [y/n]\033[0m"
 			read alphaq
 			case "$alphaq" in
 			""|Y*|y*)
-                        echo "----------------"
+			echo "----------------"
 			export SINSTALL=1
 			tlock
-                        for aurd in `cat .00RESULT`
-                        do
-                                if [ -z "$(pacman -Qsq | grep -x $aurd)" ]; then
+			for aurd in `cat .00RESULT`
+			do
+				if [ -z "$(pacman -Qsq | grep -x $aurd)" ]; then
 				export SINSTALL=1
 				if ! [ -f ${DIR}/.db.lock ]; then tlock; fi
-                                sakuri i $aurd
-                        else
+				sakuri i $aurd
+			else
 				export SINSTALL=1
 				echo -e "\033[1;32m${aurd}\033[0m already installed, \033[1;36mskipping...\033[0m"
 				fi
-                        done
+			done
 			unset SINSTALL
 			;; *)
 			true ;;
@@ -254,10 +272,10 @@ case "$1" in
 			echo -e $installerror
 			echo " "
 			;;
-        r|-R*)
+	r|-R*)
 		chlock
 		tlock
-                if [ -z "$2" ]; then echo "Write what you need to remove"; rmlock; exit 1; fi
+		if [ -z "$2" ]; then echo "Write what you need to remove"; rmlock; exit 1; fi
 		cat /dev/null > ${DIR}/.info
 		for PKG in ${@:2}
 		do
@@ -278,7 +296,7 @@ case "$1" in
 		fi
 		sort -u ${DIR}/.info > ${DIR}/.info2
 		if [ "$(command -v sudo)" ]; then
-                sudo pacman -Rns $(cat ${DIR}/.info2)
+		sudo pacman -Rns $(cat ${DIR}/.info2)
 	else
 		export FILEROOT=${DIR}/.info2
 		su -c "pacman -Rns $(cat $FILEROOT)" root
@@ -286,40 +304,40 @@ case "$1" in
 		for PKGR in ${@:2}
 		do
 		if [ -n "$(pacman -Qsq | grep -x ${PKGR})" ]; then
-                echo -e "Package \033[0;33m${PKGR}\033[0m wasn't uninstalled."
-        else
-                for PKGDIR in $(cat ${DIR}/.info2)
-                do
-                if [ -d ${IGN}/${PKGDIR} ]; then
-                rm -rf ${IGN}/${PKGR}
-                fi
-                done
-                fi
-                done
-                rm ${DIR}/.info2
-                cat /dev/null > ${DIR}/.info
+		echo -e "Package \033[0;33m${PKGR}\033[0m wasn't uninstalled."
+	else
+		for PKGDIR in $(cat ${DIR}/.info2)
+		do
+		if [ -d ${IGN}/${PKGDIR} ]; then
+		rm -rf ${IGN}/${PKGR}
+		fi
+		done
+		fi
+		done
+		rm ${DIR}/.info2
+		cat /dev/null > ${DIR}/.info
 		rmlock
-                ;;
+		;;
 --back-i--)
-                cd ${DIR}
-                if [ -d "${PKG}" ]; then rm -rf ${PKG}; fi
+		cd ${DIR}
+		if [ -d "${PKG}" ]; then rm -rf ${PKG}; fi
 		git clone --depth 1 https://aur.archlinux.org/${PKG}.git
 		if ! [ -d "${DIR}/${PKG}" ]
 		then
 			echo -e "\033[0;31mIt seems like you doesn't have internet connection or package doesn't exists.\033[0m"
 			exit 3
 		fi
-                mv ${PKG}/${GITDIR} ${DIRR}
-                if [ -z "$(ls -A ${PKG})" ]
-                then
-                        echo "Empty dir, removing."
-                        rm -rf ${PKG}
-                        rm -rf ${DIRR}/${GITDIR}
+		mv ${PKG}/${GITDIR} ${DIRR}
+		if [ -z "$(ls -A ${PKG})" ]
+		then
+			echo "Empty dir, removing."
+			rm -rf ${PKG}
+			rm -rf ${DIRR}/${GITDIR}
 			echo " "
-                else
-                        mv ${DIRR}/${GITDIR} ${PKG}
-                        cd ${PKG}
-                        makepkg -sir --noconfirm ||
+		else
+			mv ${DIRR}/${GITDIR} ${PKG}
+			cd ${PKG}
+			makepkg -sir --noconfirm ||
 			{
 			echo -e $installerror
 			export SAKURIE=1
@@ -327,12 +345,12 @@ case "$1" in
 			}
 			echo " "
 		fi
-                ;;
-        ch|-Sy)
+		;;
+	ch|-Sy)
 		chlock
 		tlock
-                cd ${UPDCHK}
-                if [ -z "$2" ]; then echo "Write what you need to check"; rmlock; exit 1; fi
+		cd ${UPDCHK}
+		if [ -z "$2" ]; then echo "Write what you need to check"; rmlock; exit 1; fi
 		for PKG in ${@:2}
 		do
 		if [ -d "${IGN}/${PKG}" ]
@@ -348,20 +366,20 @@ case "$1" in
 			esac
 		fi
 		if [ -z "$(pacman -Qsq | grep -x ${PKG})" ]
-                                then
+				then
 				echo "---------------------------"
-                                echo "Package ${PKG} doesn't exists"
+				echo "Package ${PKG} doesn't exists"
 				rmlock
-                                exit 1 
-                        fi
-                        rm -rf ./*
-                        if [ -f ${DIR}/.tmptmptmpsakuri ]
+				exit 1 
+			fi
+			rm -rf ./*
+			if [ -f ${DIR}/.tmptmptmpsakuri ]
 				then
 			rm ${DIR}/.tmptmptmpsakuri
 				else
 			touch ${DIR}/.tmptmptmpsakuri
 			fi
-                        git clone --depth 1 https://aur.archlinux.org/${PKG}.git > ${DIR}/.tmptmptmpsakuri 2>&1
+			git clone --depth 1 https://aur.archlinux.org/${PKG}.git > ${DIR}/.tmptmptmpsakuri 2>&1
 			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
@@ -385,43 +403,43 @@ case "$1" in
 				exit 3
 			fi
 			fi
-                        cd ${PKG}
+			cd ${PKG}
 			eval $(source PKGBUILD; /bin/echo pkgver="$pkgver"; /bin/echo pkgrel="$pkgrel"; /bin/echo epoch="$epoch";)
 			if [ -n "${epoch}" ]; then
-                        APP1=${epoch}:${pkgver}-${pkgrel}
+			APP1=${epoch}:${pkgver}-${pkgrel}
 		else
 			APP1=${pkgver}-${pkgrel}
 			fi
 			unset pkgver pkgrel epoch
-                        APP2=$(pacman -Qm ${PKG} | cut -d" " -f2-)
-                        if [ $APP1 == $APP2 ]
-                        then
-                                echo "---------------------------"
-                                echo "Package ${PKG} doesn't get new update."
-                                echo "---------------------------"
-                                echo "Current version: ${APP2}"
-                        else
-                                echo "---------------------------"
-                                echo "Package ${PKG} has an update! ${APP1}"
-                                echo "---------------------------"
-                                echo "Current version: ${APP2}"
-                        fi
+			APP2=$(pacman -Qm ${PKG} | cut -d" " -f2-)
+			if [ $APP1 == $APP2 ]
+			then
+				echo "---------------------------"
+				echo "Package ${PKG} doesn't get new update."
+				echo "---------------------------"
+				echo "Current version: ${APP2}"
+			else
+				echo "---------------------------"
+				echo "Package ${PKG} has an update! ${APP1}"
+				echo "---------------------------"
+				echo "Current version: ${APP2}"
+			fi
 	if [ -f ${DIR}/.info2 ]
 	then
 		rm ${DIR}/.info2
 	fi
-        rm -rf ${UPDCHK}/*
+	rm -rf ${UPDCHK}/*
 	rm ${DIR}/.tmptmptmpsakuri
 		done
 		rmlock
-                ;;
+		;;
 	cha|-Syy)
 		chlock
 		tlock
-                if [ -n "$2" ]; then rmlock; exit 1; fi
+		if [ -n "$2" ]; then rmlock; exit 1; fi
 		if [ -n "$(ls -A ${UPDALL})" ]; then rm -rf ${UPDALL}/* ; fi
-                ffile="${DIR}/.info"
-                cd ~
+		ffile="${DIR}/.info"
+		cd ~
 		if ! [ -f "${ffile}" ]; then touch ${DIR}/.info; fi
 		if [ -n "$(cat ${ffile})" ]; then cat /dev/null > ${ffile}; fi
 		if [ -n "$(ls -A ${IGN})" ]
@@ -430,18 +448,18 @@ case "$1" in
 $(ls -A ${IGN})
 ---------------"
 		fi
-                if [ -z "$(pacman -Qmq)" ]; then echo "There is nothing to do."; rmlock; exit 1; fi
-                cd ${UPDALL}
+		if [ -z "$(pacman -Qmq)" ]; then echo "There is nothing to do."; rmlock; exit 1; fi
+		cd ${UPDALL}
 		touch $(pacman -Qmq)
 		if [ -n "$(ls ${IGN})" ]; then
 		rm -f $(ls ${IGN}); fi
-                for D in *
-                do
-                        #D=${D%*/}
-                        rm -f ./$D
+		for D in *
+		do
+			#D=${D%*/}
+			rm -f ./$D
 			echo "checking ${D}..."
 			if [ -f ${DIR}/.tmptmptmpsakuri ]; then rm ${DIR}/.tmptmptmpsakuri; else touch ${DIR}/.tmptmptmpsakuri; fi
-                        git clone --depth 1 https://aur.archlinux.org/${D}.git > ${DIR}/.tmptmptmpsakuri 2>&1
+			git clone --depth 1 https://aur.archlinux.org/${D}.git > ${DIR}/.tmptmptmpsakuri 2>&1
 			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
@@ -457,53 +475,53 @@ $(ls -A ${IGN})
 				exit 3
 			fi
 			fi
-                        cd $D
+			cd $D
 			eval $(source PKGBUILD; /bin/echo pkgver="$pkgver"; /bin/echo pkgrel="$pkgrel"; /bin/echo epoch="$epoch";)
 			if [ -n "$epoch" ]; then
-                        APP1=${epoch}:${pkgver}-${pkgrel}
+			APP1=${epoch}:${pkgver}-${pkgrel}
 		else
 			APP1=${pkgver}-${pkgrel}
 			fi
 			unset pkgver pkgrel epoch
-                        APP2=$(pacman -Q ${D} | cut -d" " -f2-)
-                        if [ $APP1 == $APP2 ]
-                        then
-                                true
-                        else
-                                echo "${D} > ${APP1}" >> ${DIR}/.info
-                        fi
+			APP2=$(pacman -Q ${D} | cut -d" " -f2-)
+			if [ $APP1 == $APP2 ]
+			then
+				true
+			else
+				echo "${D} > ${APP1}" >> ${DIR}/.info
+			fi
 			rm ${DIR}/.tmptmptmpsakuri
-                done
-                        echo "----------------"
-                        cd ~
-                        if [ -z "$(cat ${ffile})" ]
-                        then
-                                echo "Nothing to update"
+		done
+			echo "----------------"
+			cd ~
+			if [ -z "$(cat ${ffile})" ]
+			then
+				echo "Nothing to update"
 				rm -rf ${UPDALL}/*
 				rmlock
-                                exit 1
-                        fi
-                        cat ${DIR}/.info
-                        cat /dev/null > ${DIR}/.info
-                        rm -rf ${UPDALL}/*
+				exit 1
+			fi
+			cat ${DIR}/.info
+			cat /dev/null > ${DIR}/.info
+			rm -rf ${UPDALL}/*
 			rmlock
-                ;;
-        l|-Q*)
-                pacman -Qmq
-                ;;
-        c)
-                echo "Clean all cache? [y/n]"
-                read input
-                if [ $input == y ] &> /dev/null
-                then
-                        rm -rf ${DIR}/*
-                else
-                if [ $input == n ] &> /dev/null
-                then
-                        echo "Aborting"
-                fi
-        fi
-                ;;
+		;;
+	l|-Q*)
+		pacman -Qmq
+		;;
+	c)
+		echo "Clean all cache? [y/n]"
+		read input
+		if [ $input == y ] &> /dev/null
+		then
+			rm -rf ${DIR}/*
+		else
+		if [ $input == n ] &> /dev/null
+		then
+			echo "Aborting"
+		fi
+	fi
+		;;
 	cc)
 		echo "Clean all packages cache? [y/n]"
 		read inputv2
@@ -517,28 +535,32 @@ $(ls -A ${IGN})
 		fi
 		;;
 	s|-Ss)
-        search_packages() {
-        declare -a aur=("${!1}")
-        CURL_JSN=$(curl -s $(echo "https://aur.archlinux.org/rpc/?v=5&type=search&by=name-desc&arg=""${aur[@]}" | sed -e 's/ /+/g'))
-        OUT_STR=$(jq -r '.results | .[] | [.Name, .Version], .Description' <<< ${CURL_JSN})
-        SEARCH_OUT=$(sed -e 's/\\//g' -e 's/\[/\\033\[0\;36m\[/g' -e 's/",/\\033\[0m", \[\\033\[0\;32m/g' \
-        -e 's/\]/\\033\[0\m\]\\033\[1\m\]/g' <<< ${OUT_STR})
-        if [ "${OUT_STR}" == '' ]; then echo -e "\033[0;31mNo packages found.\033[0m"; exit 1; fi
-        echo -ne "\033[1;33mSearch results:\033[0m"
-        echo -e ${SEARCH_OUT} | sed -e 's/\[ /\n/g' -e 's/ *\] /\n\t/g' -e 's/", / /g' -e 's/"//g'
-        }
-                if [ -z "$2" ]
-        then
-                echo "Write what you need to search"
-                exit 1
-        else
-                N=2
-                while [ "${!N}" != '' ]; do
-                        keywords[$((N-2))]=${!N}
-                        let N=N+1
-                done
-                search_packages keywords[@]
-        fi
+		if [ -z "$2" ]
+	then
+		echo "Write what you need to search"
+		exit 1
+	else
+		N=2
+		while [ "${!N}" != '' ]; do
+			keywords[$((N-2))]=${!N}
+			let N=N+1
+		done
+		search_packages keywords[@]
+	fi
+		;;
+	ss|-Ss*q)
+		if [ -z "$2" ]
+	then
+		echo "Write what you need to search"
+		exit 1
+	else
+		N=2
+		while [ "${!N}" != '' ]; do
+			keywords[$((N-2))]=${!N}
+			let N=N+1
+		done
+		ACCURATE=1 search_packages keywords[@]
+	fi
 		;;
 	g|-G)
 		if [ -z "$2" ]; then echo "Write what you need to ignore"; exit 1; fi
@@ -576,21 +598,21 @@ fi
 		if [ -f ${DIR}/.info ]; then cat /dev/null > ${DIR}/.info; else touch ${DIR}/.info; fi
 		if [ -f ${DIR}/.sakurisakuriinfo ]; then rm ${DIR}/.sakurisakuriinfo; fi
 		if [ -n "$(ls -A ${UPDALL})" ]; then rm -rf ${UPDALL}/* ; fi
-                ffile="${DIR}/.info"
-                if [ -z "$(pacman -Qmq)" ]; then echo "There is nothing to do."; rmlock; exit 1; fi
-                cd ${UPDALL}
+		ffile="${DIR}/.info"
+		if [ -z "$(pacman -Qmq)" ]; then echo "There is nothing to do."; rmlock; exit 1; fi
+		cd ${UPDALL}
 		touch $(pacman -Qmq)
 		if [ -n "$(ls ${IGN})" ]; then
 		rm -f $(ls ${IGN}); fi
 		echo Exploring updates...
 		echo "----------------"
-                for D in *
-                do
-                        #D=${D%*/}
-                        rm -f ./$D
+		for D in *
+		do
+			#D=${D%*/}
+			rm -f ./$D
 			echo "checking ${D}..."
 			if [ -f ${DIR}/.tmptmptmpsakuri ]; then rm ${DIR}/.tmptmptmpsakuri; else touch ${DIR}/.tmptmptmpsakuri; fi
-                        git clone --depth 1 https://aur.archlinux.org/${D}.git > ${DIR}/.tmptmptmpsakuri 2>&1
+			git clone --depth 1 https://aur.archlinux.org/${D}.git > ${DIR}/.tmptmptmpsakuri 2>&1
 			if cat ${DIR}/.tmptmptmpsakuri | grep "Could not resolve host" &> /dev/null
 			then
 				echo -e "\033[0;31mIt seems like you doesn't have internet connection.\033[0m"
@@ -610,38 +632,38 @@ fi
 				exit 3
 			fi
 			fi
-                        cd $D
+			cd $D
 			eval $(source PKGBUILD; /bin/echo pkgver="$pkgver"; /bin/echo pkgrel="$pkgrel"; /bin/echo epoch="$epoch";)
 			if [ -n "$epoch" ]; then
-                        APP1=${epoch}:${pkgver}-${pkgrel}
+			APP1=${epoch}:${pkgver}-${pkgrel}
 		else
 			APP1=${pkgver}-${pkgrel}
 			fi
 			unset pkgver pkgrel epoch
-                        APP2=$(pacman -Q ${D} | cut -d" " -f2-) 
-                        if [ $APP1 == $APP2 ]
-                        then
-                                true
-                        else
-                                echo "${D} > ${APP1}" >> ${DIR}/.infouser111
+			APP2=$(pacman -Q ${D} | cut -d" " -f2-) 
+			if [ $APP1 == $APP2 ]
+			then
+				true
+			else
+				echo "${D} > ${APP1}" >> ${DIR}/.infouser111
 				echo "${D}" >> ${DIR}/.info
-                        fi
+			fi
 			rm ${DIR}/.tmptmptmpsakuri
-                done
-                        #echo "----------------"
-                        cd ~
-                        if [ -z "$(cat ${ffile})" ]
-                        then
+		done
+			#echo "----------------"
+			cd ~
+			if [ -z "$(cat ${ffile})" ]
+			then
 				echo "-----------------"
-                                echo "Nothing to update"
+				echo "Nothing to update"
 				rm -rf ${UPDALL}/*
 				rmlock
-                                exit 1
-                        fi
+				exit 1
+			fi
 			echo "---------------"
 			cat ${DIR}/.infouser111
 			rm ${DIR}/.infouser111
-                        rm -rf ${UPDALL}/*
+			rm -rf ${UPDALL}/*
 			echo "Proceed with installation? [y/n]"
 			read superq
 			case "$superq" in
@@ -676,7 +698,7 @@ fi
 			cat /dev/null > ${DIR}/.info	
 			if [ -f ${DIR}/.sakurisakurierror ]; then rm ${DIR}/.sakurisakurierror; fi
 			rmlock
-                ;;
+		;;
 	gl|-Gq)
 		ls ${IGN}
 		;;
@@ -685,19 +707,19 @@ fi
 		;;
 	say)
 	echo "
-              _______________
+	      _______________
 	     <Yaourt is dead.>
 	      ---------------
-	           \\
+		   \\
 		    \\
 		      ^__^
 		      (oo)\\______
 		      (__)\\|     )\\/\\
-		           ||---w)
+			   ||---w)
 			   ||   ||"
 		;; 
-        w|-h|--help)
-		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.3.0\033[0m
+	w|-h|--help)
+		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.3.1\033[0m
 Here's a tips:
 	sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.
@@ -709,6 +731,7 @@ Here's a tips:
 	sakuri l for watch manually (AUR) installed packages.
 	sakuri w for this welcome message.
 	sakuri s (name of aur package) for search. (thanks to Seppia (repofish))
+	sakuri ss (name of aur package) for more accurate search.
 	sakuri g (names of aur packages) for ignore package(s) for checking updates.
 	sakuri ug (names of aur packages) for removing package(s) from ignore list.
 	sakuri gl for watch on ignored packages.
@@ -716,7 +739,7 @@ Here's a tips:
 		I hope I helped you with organaizing your AUR apps. Thanks for using!
 \033[0;31mmade by Artemii Sudakov (t.me/heveat)\033[0m"
 		;;
-        *)
+	*)
 		echo -e "Uknown argument. Try \033[0;33msakuri w\033[0m for help."
 		;;
 esac

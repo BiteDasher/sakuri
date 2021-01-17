@@ -119,7 +119,7 @@ case "$1" in
 		else
 			mv ${DIRR}/${GITDIR} ${PKG}
 			cd ${PKG}
-			eval $(source PKGBUILD; /bin/echo "depends=($(/bin/echo ${depends[@]} | sed "s/[^[:space:],]\+/'&'/g"))"; /bin/echo "makedepends=($(/bin/echo ${depends[@]} | sed "s/[^[:space:],]\+/'&'/g"))";)
+			eval source PKGBUILD; /bin/echo "depends=($(/bin/echo ${depends[@]} | sed "s/[^[:space:],]\+/'&'/g"))"; /bin/echo "makedepends=($(/bin/echo ${makedepends[@]} | sed "s/[^[:space:],]\+/'&'/g"))"
 			pacman -Ssq | sort > .00PRESYNC
 			pacman -Qsq | sort >> .00PRESYNC
 			sort -u .00PRESYNC > .00SYNC
@@ -209,7 +209,7 @@ case "$1" in
 		;;
 		YES)
 			cd ${DIR}/${PKG}
-			eval $(source PKGBUILD; /bin/echo "depends=($(/bin/echo ${depends[@]} | sed "s/[^[:space:],]\+/'&'/g"))"; /bin/echo "makedepends=($(/bin/echo ${depends[@]} | sed "s/[^[:space:],]\+/'&'/g"))";)
+			eval source PKGBUILD; /bin/echo "depends=($(/bin/echo ${depends[@]} | sed "s/[^[:space:],]\+/'&'/g"))"; /bin/echo "makedepends=($(/bin/echo ${makedepends[@]} | sed "s/[^[:space:],]\+/'&'/g"))"
 			pacman -Ssq | sort > .00PRESYNC
 			pacman -Qsq | sort >> .00PRESYNC
 			sort -u .00PRESYNC > .00SYNC
@@ -404,7 +404,7 @@ case "$1" in
 			fi
 			fi
 			cd ${PKG}
-			eval $(source PKGBUILD; /bin/echo pkgver="$pkgver"; /bin/echo pkgrel="$pkgrel"; /bin/echo epoch="$epoch";)
+			eval source PKGBUILD; /bin/echo pkgver="$pkgver"; /bin/echo pkgrel="$pkgrel"; /bin/echo epoch="$epoch"
 			if [ -n "${epoch}" ]; then
 			APP1=${epoch}:${pkgver}-${pkgrel}
 		else
@@ -476,7 +476,7 @@ $(ls -A ${IGN})
 			fi
 			fi
 			cd $D
-			eval $(source PKGBUILD; /bin/echo pkgver="$pkgver"; /bin/echo pkgrel="$pkgrel"; /bin/echo epoch="$epoch";)
+			eval source PKGBUILD; /bin/echo pkgver="$pkgver"; /bin/echo pkgrel="$pkgrel"; /bin/echo epoch="$epoch"
 			if [ -n "$epoch" ]; then
 			APP1=${epoch}:${pkgver}-${pkgrel}
 		else
@@ -633,7 +633,7 @@ fi
 			fi
 			fi
 			cd $D
-			eval $(source PKGBUILD; /bin/echo pkgver="$pkgver"; /bin/echo pkgrel="$pkgrel"; /bin/echo epoch="$epoch";)
+			eval source PKGBUILD; /bin/echo pkgver="$pkgver"; /bin/echo pkgrel="$pkgrel"; /bin/echo epoch="$epoch"
 			if [ -n "$epoch" ]; then
 			APP1=${epoch}:${pkgver}-${pkgrel}
 		else

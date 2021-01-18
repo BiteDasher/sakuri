@@ -525,14 +525,13 @@ $(ls -A ${IGN})
 	cc)
 		echo "Clean all packages cache? [y/n]"
 		read inputv2
-		if [ $inputv2 == y ] &> /dev/null
-		then
+		case "$inputv2" in Y*|y*|"")
 			cd ${DIR}
-			rm -rf $(ls -I gitpool -I ignore -I updall -I updchk)
-		else
+			rm -rf $(ls -I gitpool -I ignore -I updall -I updchk) ;;
+		*)
 			echo "Try next time"
-			exit 2
-		fi
+			exit 2 ;;
+		esac
 		;;
 	s|-Ss)
 		if [ -z "$2" ]

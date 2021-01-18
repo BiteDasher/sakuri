@@ -718,7 +718,7 @@ fi
 			   ||   ||"
 		;; 
 	w|-h|--help)
-		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.4.1\033[0m
+		echo -e "Hi! Welcome to Sakuri. This is a simple bash script that may help you to control your AUR packages. Current version : \033[0;32m2.4.2\033[0m
 Here's a tips:
 	sakuri i (names of aur packages) for install package(s).
 	sakuri ia (names of aur packages) for installing package(s) from cache.
